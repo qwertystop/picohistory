@@ -90,6 +90,15 @@ function filter(list, condition)
 	end
 	return t
 end
+
+function any(list, condition)
+	for i=1,#list do
+		if condition(list[i]) then
+			return true
+		end
+	end
+	return false
+end
 	
 -- beta distribution, for small
 -- positive integer a and b.
