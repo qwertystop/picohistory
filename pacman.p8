@@ -340,8 +340,9 @@ function thing:move(cell, dir, flag, vel)
 end
 
 function thing:draw()
-	spr(self.spr, self.pos.x,
-		self.pos.y, 1, 1,
+	-- need to account for centering
+	spr(self.spr, self.pos.x - 8,
+		self.pos.y - 8, 2, 2,
 		self.flipx, self.flipy)
 end
 
