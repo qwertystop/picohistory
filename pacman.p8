@@ -184,6 +184,10 @@ function vec2:unit()
 		self.y / len)
 end
 
+-- round to integer
+function vec2:cell()
+	return vec2(flr(self.x + 0.5), flr(self.y + 0.5))
+
 -- random point on unit circle
 function randir()
 	local p
@@ -294,16 +298,23 @@ function thing:update()
 	return costatus(self._updater)
 end
 
--- directions are enumerated CW:
+-- directions are enumerated to match the buttons
+-- but with 4 for not-moving
 directions = {
-	vec2(0, -1),
-	vec2(1, 0),
-	vec2(0, 1),
-	vec2(-1, 0)
+	0 = vec2(-1, 0),
+	1 = vec2(1, 0),
+	2 = vec2(0, -1),
+	3 = vec2(0, 1),
+	4 = vec2(0, 0)
 }
+directions[0] = vec2(0, 0)
 
-function thing:move()
-	-- todo movement
+function thing:move(cell, dir, flag, vel)
+	local target = cell + directions[dir]
+	-- check cell for walls (having flag)
+	if not fget(mget(target.x, target.y), flag) then
+		self.pos += (directions[dir] * vel)
+	end
 end
 
 function thing:draw()
@@ -319,11 +330,20 @@ function pacman:draw()
 end
 
 function pacman:loop()
-	local dir
+	local dir = 4 -- 4 indicates not moving
+	local cell
 	repeat
-		-- todo check button inputs
-		-- todo set direction
-		self:move(dir)
+		-- check button inputs and set direction
+		-- direction persists between frames
+		for i=0,4 do
+			if btn(i) then
+				dir = i
+				break
+			end
+		end
+		-- todo match speed to level properly
+		cell = self.pos:round()
+		self:move(cell, dir, 0, 0.5)
 		-- todo clear pellets
 		yield()
 	until gameover
@@ -338,12 +358,19 @@ end
 
 function ghost:loop()
 	local dir
+	local cell
 	repeat
-		dir = self:path()
-		self:move(dir)
+		cell = self.pos:round()
+		dir = self:path(cell)
+		-- todo match speed to level and state properly
+		self:move(cell, dir, 1, 0.6)
 		-- todo check for pacman
 		yield()
 	until gameover
+end
+
+function ghost:path(cell)
+	-- first check if pathing is to be reevaluated
 end
 
 blinky = class(ghost)
@@ -352,7 +379,7 @@ function blinky:init(x, y)
 	ghost.init(self, x, y)
 end
 
-function blinky:path()
+function blinky:target()
 	-- todo
 end
 
@@ -362,7 +389,7 @@ function pinky:init(x, y)
 	ghost.init(self, x, y)
 end
 
-function pinky:path()
+function pinky:target()
 	-- todo
 end
 
@@ -372,7 +399,7 @@ function inky:init(x, y)
 	ghost.init(self, x, y)
 end
 
-function inky:path()
+function inky:target()
 	-- todo
 end
 
@@ -382,7 +409,7 @@ function clyde:init(x, y)
 	ghost.init(self, x, y)
 end
 
-function clyde:path()
+function clyde:target()
 	-- todo
 end
 __gfx__
