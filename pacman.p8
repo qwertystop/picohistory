@@ -256,10 +256,17 @@ end
 
 -->8
 --========
--- hooks
+-- hooks and globals
 --========
 local ents
-local gameover = false
+local level = 1
+local win = false
+local power = 0
+local cur_timer = 0
+local timers
+local chase_mode = true
+local mode_frame = false
+
 function _init()
 	ents = {
 		pacman(13.5, 22),
@@ -268,12 +275,27 @@ function _init()
 		inky(13.5, 13.5),
 		clyde(14.5, 13.5)
 	}
+	cur_timer = 0
+	timers = {210, 600, 210, 600, 150, 600, 150}
 end
 
 function _update()
-	if any(ents, function(t) return t:update() end) then
-		-- todo endgame stuff
+	if cur_timer <= 0 then
+		cur_timer = timers[1]
+		del(timers, cur_timer)
+		chase_mode = not chase_mode
+		mode_frame = true
+	elseif power <= 0 then
+		cur_timer -= 1
+	else
+		power -= 1
 	end
+	if any(ents, function(t) return t:update() end) then
+		-- endgame stuff
+		level += 1
+		-- todo
+	end
+	mode_frame = false
 end
 
 function _draw()
@@ -345,8 +367,9 @@ function pacman:loop()
 		cell = self.pos:round()
 		self:move(cell, dir, 0, 0.5)
 		-- todo clear pellets
+		-- todo set power for big pellet
 		yield()
-	until gameover
+	until win
 end
 
 ghost = class(thing)
@@ -358,19 +381,59 @@ end
 
 function ghost:loop()
 	local dir
+	-- states are:
+	-- 0: chase
+	-- 1: scatter
+	-- 2: fright
+	-- 3: eyes
+	local state = 0
 	local cell
 	repeat
 		cell = self.pos:round()
-		dir = self:path(cell)
+		state, dir = self:path(state, cell, dir)
 		-- todo match speed to level and state properly
 		self:move(cell, dir, 1, 0.6)
+		if state < 3 then
 		-- todo check for pacman
 		yield()
-	until gameover
+	until win
 end
 
-function ghost:path(cell)
+function ghost:path(state, cell, dir)
 	-- first check if pathing is to be reevaluated
+	-- rules depend on state and global
+	if mode_frame and state < 2 then
+		-- reverse state and direction
+		if dir == 1 or dir == 3 then
+			return ((state + 1) % 2), dir - 1
+		else
+			return ((state + 1) % 2), dir + 1
+		end
+	else
+		-- not doing a reversal, so only redirect on
+		-- intersections
+		local rule = mget(cell.x, cell.y)
+		if fget(rule, 3) then
+			-- flag 3 on current cell means intersection
+			if state == 2 then
+				-- frightened, select direction at random
+				-- todo
+			else
+				local t
+				if state == 3 then
+					-- eyes, target is ghost-independent
+					-- set t to cage cells
+					-- or change state if there
+					-- todo
+				else
+					-- either chase or scatter,
+					-- target depends on ghost
+					t = self:target(state, cell)
+				end
+				-- todo choose a direction based on target
+			end
+		end
+	end
 end
 
 blinky = class(ghost)
