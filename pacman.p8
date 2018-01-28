@@ -185,8 +185,9 @@ function vec2:unit()
 end
 
 -- round to integer
-function vec2:cell()
+function vec2:round()
 	return vec2(flr(self.x + 0.5), flr(self.y + 0.5))
+end
 
 -- random point on unit circle
 function randir()
@@ -290,7 +291,8 @@ function _update()
 	else
 		power -= 1
 	end
-	if any(ents, function(t) return t:update() end) then
+	foreach(ents, function(t) return t:update() end)
+	if win then
 		-- endgame stuff
 		level += 1
 		-- todo
@@ -300,6 +302,7 @@ end
 
 function _draw()
 	cls()
+	-- todo map and camera
 	for e in all(ents) do
 		e:draw()
 	end
@@ -312,26 +315,23 @@ end
 thing = class()
 function thing:init(x, y)
 	self.pos = vec2(x*8, y*8)
-	self._updater = cocreate(self.loop)
 	self.anim = 1
-end
-
-function thing:update()
-	coresume(self._updater)
-	return costatus(self._updater)
+	self.dir = 4
 end
 
 -- directions are enumerated to match the buttons
 -- but with 4 for not-moving
 directions = {
-	0 = vec2(-1, 0),
-	1 = vec2(1, 0),
-	2 = vec2(0, -1),
-	3 = vec2(0, 1),
-	4 = vec2(0, 0)
+	[0] = vec2(-1, 0),
+	[1] = vec2(1, 0),
+	[2] = vec2(0, -1),
+	[3] = vec2(0, 1),
+	[4] = vec2(0, 0)
 }
 function revdir(num)
-	if num % 2 == 1 then
+	if num == 4 then
+		return 4
+	elseif num % 2 == 1 then
 		return num - 1
 	else
 		return num + 1
@@ -339,6 +339,7 @@ function revdir(num)
 end
 
 function thing:move(cell, dir, flag, vel)
+	printh(repr(dir))
 	local target = cell + directions[dir]
 	-- check cell for walls (having flag)
 	if not fget(mget(target.x, target.y), flag) then
@@ -354,14 +355,15 @@ function thing:draw(sp, flipx, flipy)
 end
 
 pacman = class(thing)
-function pacman:init()
+function pacman:init(x, y)
+	thing.init(self, x, y)
 	self.sprss = {
-		0 = {4, 6, 8, 10},
-		1 = {4, 6, 8, 10},
-		2 = {4, 12, 14, 44},
-		3 = {4, 12, 14, 44},
-		4 = {4}
+		{4, 6, 8, 10},
+		{4, 12, 14, 44},
+		{4, 12, 14, 44},
+		{4}
 	}
+	self.sprss[0] = {4, 6, 8, 10}
 end
 
 function pacman:draw()
@@ -372,61 +374,56 @@ function pacman:draw()
 	thing.draw(self, sprs[self.anim], flipx, flipy)
 end
 
-function pacman:loop()
-	local dir = 4 -- 4 indicates not moving
-	local cell
-	repeat
-		-- check button inputs and set direction
-		-- direction persists between frames
-		for i=0,4 do
-			if btn(i) then
-				dir = i
-				break
-			end
+function pacman:update()
+	-- check button inputs and set direction
+	-- direction persists between frames
+	for i=0,4 do
+		if btn(i) then
+			self.dir = i
+			break
 		end
-		-- todo match speed to level properly
-		cell = self.pos:round()
-		self:move(cell, dir, 0, 0.5)
-		-- todo clear pellets
-		-- todo set power for big pellet
-		yield()
-	until win
+	end
+	-- todo match speed to level properly
+	local cell = self.pos:round()
+	self:move(cell, self.dir, 0, 0.5)
+	-- todo clear pellets
+	-- todo set power for big pellet
 end
 
 ghost = class(thing)
-function ghost:init()
-	self.sprs = {
-		0 = 36, 1 = 36, 2 = 38, 3 = 40, 4 = 40
-	}
-function ghost:draw()
-	pal(8, self.color)
-	local sp = self.state == 3 and 42 or self.sprs[self.dir]
-	thing.draw(self, sp, self.dir == 0, false)
-end
-
-function ghost:loop()
-	local dir
+function ghost:init(x, y)
+	thing.init(self, x, y)
+	self.sprs = {36, 38, 40, 40}
+	self.sprs[0] = 36
 	-- states are:
 	-- 0: chase
 	-- 1: scatter
 	-- 2: fright
 	-- 3: eyes
 	-- 4: in cage
-	local state = 0
-	local cell
-	repeat
-		cell = self.pos:round()
-		state, dir = self:path(state, cell, dir)
-		-- todo match speed to level and state properly
-		self:move(cell, dir, 1, 0.6)
-		if state < 3 then
-			-- todo check for pacman
-		end
-		yield()
-	until win
+	self.state = 0
 end
 
-function ghost:path(state, cell, dir)
+function ghost:draw()
+	pal(8, self.color)
+	local sp = self.state == 3 and 42 or self.sprs[self.dir]
+	thing.draw(self, sp, self.dir == 0, false)
+end
+
+function ghost:update()
+	local cell
+	local cell = self.pos:round()
+	self.state, self.dir = self:path(cell)
+	-- todo match speed to level and self.state properly
+	self:move(cell, self.dir, 1, 0.6)
+	if self.state < 3 then
+		-- todo check for pacman
+	end
+end
+
+function ghost:path(cell)
+	local state = self.state
+	local dir = self.dir
 	-- first check if pathing is to be reevaluated
 	-- rules depend on state and global
 	local ns, nd -- new state and dir
@@ -452,7 +449,7 @@ function ghost:path(state, cell, dir)
 			if #options > 1 then del(options, revdir(dir)) end
 			if state == 2 then
 				-- frightened, select direction at random
-				nd = options[flr(rnd(#options))+1]
+				nd = options[flr(rnd(#options)+1)]
 			else
 				local t
 				if state == 3 then
@@ -473,7 +470,7 @@ function ghost:path(state, cell, dir)
 				nd = sort(options, function(d)
 					local c = cell + directions[d]
 					return (c - t):mag()
-				end)
+				end)[1]
 			end
 		else
 			-- not an intersection
