@@ -313,6 +313,7 @@ thing = class()
 function thing:init(x, y)
 	self.pos = vec2(x*8, y*8)
 	self._updater = cocreate(self.loop)
+	self.anim = 1
 end
 
 function thing:update()
@@ -345,17 +346,30 @@ function thing:move(cell, dir, flag, vel)
 	end
 end
 
-function thing:draw()
+function thing:draw(sp, flipx, flipy)
 	-- need to account for centering
-	spr(self.spr, self.pos.x - 8,
+	spr(sp, self.pos.x - 8,
 		self.pos.y - 8, 2, 2,
-		self.flipx, self.flipy)
+		flipx, flipy)
 end
 
 pacman = class(thing)
+function pacman:init()
+	self.sprss = {
+		0 = {4, 6, 8, 10},
+		1 = {4, 6, 8, 10},
+		2 = {4, 12, 14, 44},
+		3 = {4, 12, 14, 44},
+		4 = {4}
+	}
+end
+
 function pacman:draw()
-	-- todo set flipx and flipy and sprite
-	thing.draw(self)
+	local flipx = self.dir == 0
+	local flipy = self.dir == 2
+	local sprs = self.sprss[self.dir]
+	self.anim = mid(1, self.anim + 1, #sprs)
+	thing.draw(self, sprs[self.anim], flipx, flipy)
 end
 
 function pacman:loop()
@@ -380,10 +394,14 @@ function pacman:loop()
 end
 
 ghost = class(thing)
+function ghost:init()
+	self.sprs = {
+		0 = 36, 1 = 36, 2 = 38, 3 = 40, 4 = 40
+	}
 function ghost:draw()
 	pal(8, self.color)
-	-- todo set flipx and sprite
-	thing.draw(self)
+	local sp = self.state == 3 and 42 or self.sprs[self.dir]
+	thing.draw(self, sp, self.dir == 0, false)
 end
 
 function ghost:loop()
@@ -450,7 +468,7 @@ function ghost:path(state, cell, dir)
 					-- target depends on ghost either way
 					t = self:target(state, cell)
 				end
-				-- choose the direction with the least 
+				-- choose the direction with the least
 				-- straight-line distance to the target
 				nd = sort(options, function(d)
 					local c = cell + directions[d]
