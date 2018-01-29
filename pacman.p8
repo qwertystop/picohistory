@@ -284,7 +284,7 @@ function _init()
 end
 
 function _update()
-	if cur_timer <= 0 then
+	if cur_timer <= 0 and #timers > 0 then
 		cur_timer = timers[1]
 		del(timers, cur_timer)
 		chase_mode = not chase_mode
