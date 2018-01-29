@@ -272,11 +272,11 @@ local cam = box(0, 0, 16, 16)
 
 function _init()
 	ents = {
-		pacman(13.5, 22),
-		blinky(11.5, 13.5),
-		pinky(12.5, 13.5),
-		inky(13.5, 13.5),
-		clyde(14.5, 13.5)
+		pacman(1,1),-- 13, 22.5),
+		blinky(11.5, 14),
+		pinky(12.5, 14),
+		inky(13.5, 14),
+		clyde(14.5, 14)
 	}
 	pac = ents[1]
 	cur_timer = 0
@@ -325,7 +325,7 @@ end
 
 -- directions are enumerated to match the buttons
 -- but with 4 for not-moving
-directions = {
+local directions = {
 	[0] = vec2(-1, 0),
 	[1] = vec2(1, 0),
 	[2] = vec2(0, -1),
@@ -342,6 +342,16 @@ function revdir(num)
 	end
 end
 
+-- maps sprite numbers for pellets
+-- to no-pellet equivalents
+-- (preserve ghost pathing info)
+local pelletmap = {
+	[16] = 47,
+	[32] = 47,
+	[48] = 49,
+	[50] = 51
+}
+
 thing = class()
 function thing:init(x, y)
 	self.pos = vec2(x, y)
@@ -349,18 +359,21 @@ function thing:init(x, y)
 	self.dir = 4
 end
 
-function thing:move(cell, dir, flag, vel)
-	local target = cell + directions[dir]
-	-- check cell for walls (having flag)
-	-- todo fix collision
+function thing:move(flag, vel)
+	local center = self.pos
+	local cell = center:round()
+	local target = (center + (directions[self.dir] * 0.7)):round()
+	-- check if we're within half a cell of hitting the wall
 	if not fget(mget(target.x, target.y), flag) then
-		self.pos += (directions[dir] * vel)
+		self.pos += (directions[self.dir] * vel)
 	end
 end
 
 function thing:draw(sp, flipx, flipy)
-	spr(sp, self.pos.x * 8 - 8,
-		self.pos.y * 8 - 8, 2, 2,
+	local center = self.pos
+	-- adjust coordinates because sprites draw from top-left
+	spr(sp, (center.x - 1) * 8 + 4,
+		(center.y - 1) * 8 + 4, 2, 2,
 		flipx, flipy)
 end
 
@@ -394,11 +407,16 @@ function pacman:update()
 		end
 	end
 	-- todo match speed to level properly
-	local cell = self.pos:round()
-	self:move(cell, self.dir, 0, 0.25)
+	self:move(0, 0.25)
 	self.pos.x = self.pos.x % 28
-	-- todo clear pellets
+	-- clear pellets
+	local cell = self.pos:round()
+	local p = mget(cell.x, cell.y)
+	if fget(p, 2) then
+		mset(cell.x, cell.y, pelletmap[p])
+	-- todo keep count of pellets somehow
 	-- todo set power for big pellet
+	end
 end
 
 ghost = class(thing)
@@ -423,10 +441,9 @@ end
 
 function ghost:update()
 	local cell
-	local cell = self.pos:round()
-	self.state, self.dir = self:path(cell)
+	self.state, self.dir = self:path(self.pos:round())
 	-- todo match speed to level and self.state properly
-	self:move(cell, self.dir, 1, 0.6)
+	self:move(1, 0.6)
 	if self.state < 3 then
 		-- todo check for pacman
 	end
