@@ -163,6 +163,9 @@ function vec2:__sub(other)
 	return self + other * -1
 end
 
+function vec2:__lt(other)
+	return self:mag() < other:mag()
+
 -- paired multiplication
 function vec2:elemx(other)
 	return vec2(
@@ -190,6 +193,11 @@ function vec2:unit()
 		self.y * self.y)
 	return vec2(self.x / len,
 		self.y / len)
+end
+
+-- round to integer
+function vec2:round()
+	return vec2(flr(self.x + 0.5), flr(self.y + 0.5))
 end
 
 function heading(angle)
