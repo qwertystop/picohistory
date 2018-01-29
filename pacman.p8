@@ -267,6 +267,8 @@ local cur_timer = 0
 local timers
 local chase_mode = true
 local mode_frame = false
+local pac
+local cam = box(0, 0, 16, 16)
 
 function _init()
 	ents = {
@@ -276,6 +278,7 @@ function _init()
 		inky(13.5, 13.5),
 		clyde(14.5, 13.5)
 	}
+	pac = ents[1]
 	cur_timer = 0
 	timers = {210, 600, 210, 600, 150, 600, 150}
 end
@@ -292,17 +295,25 @@ function _update()
 		power -= 1
 	end
 	foreach(ents, function(t) return t:update() end)
+	-- update the camera
+	local ploc = pac.pos
+	cam.l = mid(0, ploc.x - 8, 12)
+	cam.t = mid(0, ploc.y - 8, 15)
 	if win then
-		-- endgame stuff
 		level += 1
-		-- todo
+		-- todo endgame stuff
 	end
 	mode_frame = false
 end
 
 function _draw()
 	cls()
-	-- todo map and camera
+	-- center the camera on the player
+	-- but don't scroll past the edge
+	camera(cam.l * 8, cam.t * 8)
+	local x = flr(cam.l)
+	local y = flr(cam.t)
+	map(x, y, x * 8, y * 8, 17, 17)
 	for e in all(ents) do
 		e:draw()
 	end
@@ -310,13 +321,6 @@ end
 -->8
 function wrap(pos)
 	pos.x = pos.x % 224
-end
-
-thing = class()
-function thing:init(x, y)
-	self.pos = vec2(x*8, y*8)
-	self.anim = 1
-	self.dir = 4
 end
 
 -- directions are enumerated to match the buttons
@@ -338,19 +342,25 @@ function revdir(num)
 	end
 end
 
+thing = class()
+function thing:init(x, y)
+	self.pos = vec2(x, y)
+	self.anim = 1
+	self.dir = 4
+end
+
 function thing:move(cell, dir, flag, vel)
-	printh(repr(dir))
 	local target = cell + directions[dir]
 	-- check cell for walls (having flag)
+	-- todo fix collision
 	if not fget(mget(target.x, target.y), flag) then
 		self.pos += (directions[dir] * vel)
 	end
 end
 
 function thing:draw(sp, flipx, flipy)
-	-- need to account for centering
-	spr(sp, self.pos.x - 8,
-		self.pos.y - 8, 2, 2,
+	spr(sp, self.pos.x * 8 - 8,
+		self.pos.y * 8 - 8, 2, 2,
 		flipx, flipy)
 end
 
@@ -358,20 +368,20 @@ pacman = class(thing)
 function pacman:init(x, y)
 	thing.init(self, x, y)
 	self.sprss = {
-		{4, 6, 8, 10},
-		{4, 12, 14, 44},
-		{4, 12, 14, 44},
+		{4, 6, 8, 10, 8, 6, 4},
+		{4, 12, 14, 44, 14, 12, 4},
+		{4, 12, 14, 44, 14, 12, 4},
 		{4}
 	}
-	self.sprss[0] = {4, 6, 8, 10}
+	self.sprss[0] = {4, 6, 8, 10, 8, 6, 4}
 end
 
 function pacman:draw()
 	local flipx = self.dir == 0
 	local flipy = self.dir == 2
 	local sprs = self.sprss[self.dir]
-	self.anim = mid(1, self.anim + 1, #sprs)
-	thing.draw(self, sprs[self.anim], flipx, flipy)
+	self.anim = (self.anim + 0.4) % #sprs
+	thing.draw(self, sprs[flr(self.anim)+1], flipx, flipy)
 end
 
 function pacman:update()
@@ -385,7 +395,8 @@ function pacman:update()
 	end
 	-- todo match speed to level properly
 	local cell = self.pos:round()
-	self:move(cell, self.dir, 0, 0.5)
+	self:move(cell, self.dir, 0, 0.25)
+	self.pos.x = self.pos.x % 28
 	-- todo clear pellets
 	-- todo set power for big pellet
 end
