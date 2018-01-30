@@ -313,9 +313,7 @@ function _update()
 		lose = false
 		-- todo endgame stuff
 	elseif lose then
-		win = false
-		lose = false
-		-- todo endgame stuff
+		extcmd('reset')
 	end
 	mode_frame = false
 end
