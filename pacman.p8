@@ -280,7 +280,6 @@ function _init()
 		inky(13.5, 14),
 		clyde(15.5, 14)
 	}
-	level = 1
 	win = false
 	lose = false
 	pac = ents[1]
@@ -317,11 +316,11 @@ function _update()
 	cam.t = mid(0, ploc.y - 8, 15)
 	-- game over?
 	if win then
-		level += 1
 		win = false
 		lose = false
-		-- todo endgame stuff
+		-- todo win animation
 	elseif lose then
+		-- todo loss animation
 		extcmd('reset')
 	end
 	mode_frame = false
@@ -428,7 +427,6 @@ function pacman:update()
 			break
 		end
 	end
-	-- todo match speed to level properly
 	self:move(0, 0.25)
 	self.pos.x = self.pos.x % 28
 	-- clear pellets
@@ -463,15 +461,23 @@ end
 
 function ghost:draw()
 	pal(8, self.color)
-	local sp = self.state == 3 and 42 or self.sprs[self.dir]
+	local sp
+	local st = self.state
+	if st == 2 then
+		sp = 0 -- todo fright sprite
+	elseif st == 3 then
+		sp = 42 -- eyes
+	else
+		sp = self.sprs[self.dir]
+	end
 	thing.draw(self, sp, self.dir == 0, false)
 end
 
 function ghost:update()
 	local cell
 	self.state, self.dir = self:path(self.pos:round())
-	-- todo match speed to level and self.state properly
-	self:move(1, 0.6)
+	-- todo match speed to state
+	self:move(1, 0.5)
 	if self.state < 3 then
 		-- todo check for pacman
 	end
