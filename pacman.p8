@@ -295,18 +295,22 @@ function _init()
 	power = 0
 	pelletcount = 0
 	for x=0,27 do for y=0,30 do
-		if mget(x,y,2) then
+		if fget(mget(x,y), 2) then
 			pelletcount += 1
 		end
 	end end
-	coros = {endtime = cocreate(coro_timer_23f)}
+	coros = {
+		endtime = cocreate(endgame_timer),
+		wingame = cocreate(win_timer)
+	}
 end
 
 function _update()
 	if win then
-		win = false
 		lose = false
-		-- todo win animation
+		if not coresume(coros.wingame) then
+			extcmd('reset')
+		end
 	elseif lose then
 		if not coresume(coros.endtime) then
 			extcmd('reset')
@@ -334,13 +338,34 @@ function _update()
 	end
 end
 
-function coro_timer_23f()
+function endgame_timer()
 	-- currently just a timer before reset
 	-- plus setting pac's animation
 	pac.anim = 1
-	for i=0,23 do
+	for i=1,23 do
 		yield()
 	end
+end
+
+function win_timer()
+	-- manages fades for win animation
+	pal(1, 0)
+	pal(7, 15)
+	pal(12, 13)
+	pal(10, 9)
+	for i=1,10 do yield() end
+	pal(12, 5)
+	pal(7, 6)
+	pal(10, 4)
+	for i=1,10 do yield() end
+	pal(10, 5)
+	pal(7, 1)
+	pal(12, 1)
+	for i=1,10 do yield() end
+	pal(10, 0)
+	pal(7,0)
+	pal(12, 0)
+	for i=1,10 do yield() end
 end
 
 function _draw()
