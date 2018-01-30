@@ -384,12 +384,26 @@ function thing:init(x, y)
 end
 
 function thing:move(flag, vel)
-	local center = self.pos
-	local cell = center:round()
-	local target = (center + (directions[self.dir] * 0.7)):round()
-	-- check if we're within half a cell of hitting the wall
-	if not fget(mget(target.x, target.y), flag) then
-		self.pos += (directions[self.dir] * vel)
+	local pos = self.pos
+	local dir = self.dir
+	if dir ~= 4 then
+		local cell = pos:round()
+		local target = (pos + (directions[dir] * 0.7)):round()
+		-- check if we're within half a cell of hitting the wall
+		if not fget(mget(target.x, target.y), flag) then
+			self.pos += (directions[dir] * vel)
+		end
+		-- nudge towards path center
+		local nudge
+		if dir < 2 then -- horiz movement
+			nudge = 'y'
+		else -- vertical movement
+			nudge = 'x'
+		end
+		if pos[nudge] ~= cell[nudge] then
+			local sign = (pos[nudge] - cell[nudge]) > 0 and -1 or 1
+			self.pos[nudge] += sign * vel
+		end
 	end
 end
 
