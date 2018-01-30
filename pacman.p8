@@ -274,11 +274,11 @@ local pelletcount
 
 function _init()
 	ents = {
-		pacman(1,1),-- 13, 22.5),
-		blinky(11.5, 14),
-		pinky(12.5, 14),
+		pacman(13.5, 23),
+		blinky(13.5, 11),
+		pinky(11.5, 14),
 		inky(13.5, 14),
-		clyde(14.5, 14)
+		clyde(15.5, 14)
 	}
 	pac = ents[1]
 	cur_timer = 0
