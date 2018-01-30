@@ -273,6 +273,7 @@ local timers -- table[int]
 local chase_mode -- bool
 local mode_frame -- bool
 local pac -- pacman
+local ghosts -- table[ghost]
 local cam = box(0, 0, 16, 16)
 local pelletcount -- int
 local coros -- table[coroutine]
@@ -289,6 +290,7 @@ function _init()
 	win = false
 	lose = false
 	pac = ents[1]
+	ghosts = {ents[2], ents[3], ents[4], ents[5]}
 	cur_timer = 0
 	chase_mode = true
 	mode_frame = false
@@ -447,7 +449,6 @@ function thing:move(flag, vel)
 		if pos[axis] ~= cell[axis] then
 			local nudge = min(abs(pos[axis] - cell[axis]), vel)
 			local sign = (pos[axis] - cell[axis]) > 0 and -1 or 1
-			
 			self.pos[axis] += sign * nudge
 		end
 	end
@@ -522,6 +523,13 @@ function pacman:update()
 			-- power pellet
 			power = 150 -- can't find timing docs
 		end
+		-- a ghost counts up
+		for g in all(ghosts) do
+			if g.state == 4 then
+				g.counter += 1
+				break
+			end
+		end
 	end
 end
 -->8
@@ -531,6 +539,7 @@ function ghost:init(x, y)
 	self.home = vec2(x, y)
 	self.sprs = {36, 38, 40, 40}
 	self.sprs[0] = 36
+	self.counter = 0
 	-- states are:
 	-- 0: chase
 	-- 1: scatter
@@ -612,13 +621,13 @@ function ghost:path(cell)
 					-- actually lead to home
 					if self.pos == self.home then
 						self.state = 4
-						self.counter = self.initcounter
+						self.counter = 0
 					else
 						t = self.home
 					end
 				elseif state == 4 then
 					-- currently in cage.
-					if self.counter == 0 then
+					if self.counter > self.plimit then
 						-- time to leave
 						self.state = 2
 					end
@@ -645,6 +654,8 @@ end
 blinky = class(ghost)
 function blinky:init(x, y)
 	self.color = 8
+	self.state = 2
+	self.plimit = 0
 	ghost.init(self, x, y)
 end
 
@@ -655,6 +666,7 @@ end
 pinky = class(ghost)
 function pinky:init(x, y)
 	self.color = 14
+	self.plimit = 0
 	ghost.init(self, x, y)
 end
 
@@ -665,6 +677,7 @@ end
 inky = class(ghost)
 function inky:init(x, y)
 	self.color = 12
+	self.plimit = 30
 	ghost.init(self, x, y)
 end
 
@@ -675,6 +688,7 @@ end
 clyde = class(ghost)
 function clyde:init(x, y)
 	self.color = 9
+	self.plimit = 60
 	ghost.init(self, x, y)
 end
 
