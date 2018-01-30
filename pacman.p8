@@ -259,18 +259,18 @@ end
 --========
 -- hooks and globals
 --========
-local ents
-local level = 1
-local win = false
-local lose = false
-local power = 0
-local cur_timer = 0
-local timers
-local chase_mode = true
-local mode_frame = false
-local pac
+local ents -- table
+local level -- int
+local win -- bool
+local lose -- bool
+local power -- int
+local cur_timer -- int
+local timers -- table[int]
+local chase_mode -- bool
+local mode_frame -- bool
+local pac -- pacman
 local cam = box(0, 0, 16, 16)
-local pelletcount
+local pelletcount -- int
 
 function _init()
 	ents = {
@@ -280,9 +280,15 @@ function _init()
 		inky(13.5, 14),
 		clyde(15.5, 14)
 	}
+	level = 1
+	win = false
+	lose = false
 	pac = ents[1]
 	cur_timer = 0
+	chase_mode = true
+	mode_frame = false
 	timers = {210, 600, 210, 600, 150, 600, 150}
+	power = 0
 	pelletcount = 0
 	for x=0,27 do for y=0,30 do
 		if mget(x,y,2) then
@@ -292,21 +298,24 @@ function _init()
 end
 
 function _update()
-	if cur_timer <= 0 and #timers > 0 then
+	-- manage various timers
+	if cur_timer == 0 and #timers > 0 then
 		cur_timer = timers[1]
 		del(timers, cur_timer)
 		chase_mode = not chase_mode
 		mode_frame = true
-	elseif power <= 0 then
-		cur_timer -= 1
-	else
+	elseif power >  0 then
 		power -= 1
+	else
+		cur_timer -= 1
 	end
-	foreach(ents, function(t) return t:update() end)
+	-- update the entities
+	foreach(ents, function(t) t:update() end)
 	-- update the camera
 	local ploc = pac.pos
 	cam.l = mid(0, ploc.x - 8, 12)
 	cam.t = mid(0, ploc.y - 8, 15)
+	-- game over?
 	if win then
 		level += 1
 		win = false
@@ -363,7 +372,7 @@ local pelletmap = {
 	[48] = 49,
 	[50] = 51
 }
-
+-->8
 thing = class()
 function thing:init(x, y)
 	self.pos = vec2(x, y)
@@ -401,6 +410,7 @@ function pacman:init(x, y)
 	self.sprss[0] = {4, 6, 8, 10, 8, 6, 4}
 end
 
+-->8
 function pacman:draw()
 	local flipx = self.dir == 0
 	local flipy = self.dir == 2
@@ -433,7 +443,7 @@ function pacman:update()
 	-- todo set power for big pellet
 	end
 end
-
+-->8
 ghost = class(thing)
 function ghost:init(x, y)
 	thing.init(self, x, y)
