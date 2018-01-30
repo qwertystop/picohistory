@@ -448,6 +448,7 @@ end
 ghost = class(thing)
 function ghost:init(x, y)
 	thing.init(self, x, y)
+	self.home = vec2(x, y)
 	self.sprs = {36, 38, 40, 40}
 	self.sprs[0] = 36
 	-- states are:
@@ -515,10 +516,15 @@ function ghost:path(cell)
 			else
 				local t
 				if state == 3 then
-					-- eyes, target is ghost-independent
-					-- set t to cage cells
-					-- or change state if there
-					-- todo
+					-- eyes, target is starting position
+					-- or change state if already there
+					-- todo make sure collision flags and pathing
+					-- actually lead to home
+					if self.pos == self.home then
+						self.state = 4
+					else
+						t = self.home
+					end
 				elseif state == 4 then
 					-- currently in cage.
 					-- todo how to handle this
