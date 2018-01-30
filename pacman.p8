@@ -276,6 +276,7 @@ local pac -- pacman
 local cam = box(0, 0, 16, 16)
 local pelletcount -- int
 local coros -- table[coroutine]
+local vel = 0.25
 
 function _init()
 	ents = {
@@ -437,15 +438,17 @@ function thing:move(flag, vel)
 			self.pos += (directions[dir] * vel)
 		end
 		-- nudge towards path center
-		local nudge
+		local axis
 		if dir < 2 then -- horiz movement
-			nudge = 'y'
+			axis = 'y'
 		else -- vertical movement
-			nudge = 'x'
+			axis = 'x'
 		end
-		if pos[nudge] ~= cell[nudge] then
-			local sign = (pos[nudge] - cell[nudge]) > 0 and -1 or 1
-			self.pos[nudge] += sign * vel
+		if pos[axis] ~= cell[axis] then
+			local nudge = min(abs(pos[axis] - cell[axis]), vel)
+			local sign = (pos[axis] - cell[axis]) > 0 and -1 or 1
+			
+			self.pos[axis] += sign * nudge
 		end
 	end
 end
@@ -495,12 +498,21 @@ function pacman:update()
 			break
 		end
 	end
-	self:move(0, 0.25)
-	self.pos.x = self.pos.x % 28
-	-- clear pellets
 	local cell = self.pos:round()
 	local p = mget(cell.x, cell.y)
-	if fget(p, 2) then
+	local pelcell = fget(p, 2)
+	if not pelcell then
+		-- eating causes one-frame pause
+		-- energizers cause speed up
+		if power > 0 then
+			self:move(0, vel * 1.1)
+		else
+			self:move(0, vel)
+		end
+	end
+	self.pos.x = self.pos.x % 28
+	-- clear pellets
+	if pelcell then
 		mset(cell.x, cell.y, pelletmap[p])
 		pelletcount -= 1
 		if pelletcount == 0 then
@@ -545,8 +557,11 @@ end
 function ghost:update()
 	local cell = self.pos:round()
 	self.state, self.dir = self:path(cell)
-	-- todo match speed to state
-	self:move(1, 0.5)
+	if self.state == 2 then
+		self:move(1, vel * 0.7)
+	else
+		self:move(1, vel * 0.98)
+	end
 	if cell == pac.pos:round() then
 		-- someone's getting et
 		if self.state < 2 then
