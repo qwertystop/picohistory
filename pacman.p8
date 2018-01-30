@@ -262,6 +262,7 @@ end
 local ents
 local level = 1
 local win = false
+local lose = false
 local power = 0
 local cur_timer = 0
 local timers
@@ -269,6 +270,7 @@ local chase_mode = true
 local mode_frame = false
 local pac
 local cam = box(0, 0, 16, 16)
+local pelletcount
 
 function _init()
 	ents = {
@@ -281,6 +283,12 @@ function _init()
 	pac = ents[1]
 	cur_timer = 0
 	timers = {210, 600, 210, 600, 150, 600, 150}
+	pelletcount = 0
+	for x=0,27 do for y=0,30 do
+		if mget(x,y,2) then
+			pelletcount += 1
+		end
+	end end
 end
 
 function _update()
@@ -301,6 +309,12 @@ function _update()
 	cam.t = mid(0, ploc.y - 8, 15)
 	if win then
 		level += 1
+		win = false
+		lose = false
+		-- todo endgame stuff
+	elseif lose then
+		win = false
+		lose = false
 		-- todo endgame stuff
 	end
 	mode_frame = false
@@ -414,7 +428,10 @@ function pacman:update()
 	local p = mget(cell.x, cell.y)
 	if fget(p, 2) then
 		mset(cell.x, cell.y, pelletmap[p])
-	-- todo keep count of pellets somehow
+		pelletcount -= 1
+		if pelletcount == 0 then
+			win = true
+		end
 	-- todo set power for big pellet
 	end
 end
