@@ -149,6 +149,10 @@ function vec2:__mul(n)
 		self.y * n)
 end
 
+function vec2:__eq(other)
+	return self.x == other.x and self.y == other.y
+end
+
 function vec2:__sub(other)
 	-- if performance is problem,
 	-- can inline (cost: symcount)
@@ -479,9 +483,13 @@ function ghost:update()
 	self.state, self.dir = self:path(cell)
 	-- todo match speed to state
 	self:move(1, 0.5)
-	if self.state < 3
-			and cell == pac.pos:round() then
-		lose = true
+	if cell == pac.pos:round() then
+		-- someone's getting et
+		if self.state < 2 then
+			lose = true
+		elseif self.state == 2 then
+			self.state = 3
+		end
 	end
 end
 
