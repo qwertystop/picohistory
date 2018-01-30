@@ -475,12 +475,13 @@ function ghost:draw()
 end
 
 function ghost:update()
-	local cell
-	self.state, self.dir = self:path(self.pos:round())
+	local cell = self.pos:round()
+	self.state, self.dir = self:path(cell)
 	-- todo match speed to state
 	self:move(1, 0.5)
-	if self.state < 3 then
-		-- todo check for pacman
+	if self.state < 3
+			and cell == pac.pos:round() then
+		lose = true
 	end
 end
 
