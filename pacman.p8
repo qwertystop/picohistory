@@ -440,7 +440,10 @@ function pacman:update()
 		if pelletcount == 0 then
 			win = true
 		end
-	-- todo set power for big pellet
+		if p == 16 then
+			-- power pellet
+			power = 150 -- can't find timing docs
+		end
 	end
 end
 -->8
