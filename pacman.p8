@@ -419,7 +419,7 @@ end
 local pelletmap = {
 	[16] = 47,
 	[32] = 47,
-	[62] = 49
+	[62] = 49,
 	[48] = 49,
 	[51] = 50
 }
@@ -587,8 +587,9 @@ function ghost:path(cell)
 	printh("Pathing for ".. self.name)
 	spew{self}
 	-- todo movement problems:
-	-- todo fix non-intersection corners
+	-- todo choice of direction
 	-- todo special-case leaving the house
+	-- debug grep is grep -Pazo "(?s)Pathing for blinky.\N*.intdone pathing"
 	-- current
 	local state = self.state
 	local dir = self.dir
@@ -623,14 +624,17 @@ function ghost:path(cell)
 				and ((self.pos*8) - (cell*8)):mag() < 2 then
 				printh 'intersection'
 			-- flag 4 means can't go up
-			local options = fget(rule, 4) and {0, 1, 2, 3} or {0, 1, 3}
+			local options = fget(rule, 4) and {0, 1, 3} or {0, 1, 2, 3}
+			spew{'initial options', options}
 			-- filter out directions that lead to walls
 			options = filter(options, function(d)
 				local c = cell + directions[d]
 				return not fget(mget(c.x, c.y), 1)
 			end)
+			spew{'filtered options', options}
 			-- can't go backwards unless hitting dead end
 			if #options > 1 then del(options, revdir(dir)) end
+			spew{'post revdir filter', options}
 			if state == 2 then
 				printh 'frightened'
 				-- frightened, select direction at random
@@ -658,10 +662,13 @@ function ghost:path(cell)
 					-- scatter
 					t = self.scatterpoint
 				end
+				printh('target is ' .. repr(t))
 				-- choose the direction with the least
 				-- straight-line distance to the target
 				nd = sort(options, function(d)
+					printh('measuring direction '..d)
 					local c = cell + directions[d]
+					printh('distance from ' .. c .. ' to ' .. repr(t) .. ' is ' .. (c-t):mag())
 					return (c - t):mag()
 				end)[1]
 			end
@@ -671,6 +678,7 @@ function ghost:path(cell)
 		end
 	end
 	spew {ns, nd}
+	printh "done pathing"
 	return ns, nd
 end
 
