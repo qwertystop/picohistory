@@ -538,7 +538,7 @@ end
 ghost = class(thing)
 function ghost:init(x, y)
 	thing.init(self, x, y)
-	self.home = vec2(x, y)
+	self.home = vec2(13.5, 14)
 	self.sprs = {36, 38, 40, 40}
 	self.sprs[0] = 36
 	self.counter = 0
@@ -548,6 +548,7 @@ function ghost:init(x, y)
 	-- 2: fright
 	-- 3: eyes
 	-- 4: in cage
+	-- 5: following specific routine
 	self.state = 4
 end
 
@@ -589,7 +590,8 @@ function ghost:path(cell)
 	-- todo movement problems:
 	-- todo choice of direction
 	-- todo special-case leaving the house
-	-- debug grep is grep -Pazo "(?s)Pathing for blinky.\N*.intdone pathing"
+	-- debug grep is:
+	-- grep -Pazo "(?s)Pathing for blinky.*?intersection.*?done pathing"
 	-- current
 	local state = self.state
 	local dir = self.dir
@@ -604,15 +606,6 @@ function ghost:path(cell)
 		-- reverse state and direction
 		ns = (state + 1) % 2
 		nd = revdir(dir)
-	elseif state == 4 then
-		printh 'caged'
-		-- currently in cage.
-		if self.counter >= self.plimit then
-			printh 'leaving'
-			-- time to leave
-			ns = 0
-			nd = 0
-		end
 	else
 		-- not doing a reversal, so only redirect on
 		-- intersections, and state is the same
@@ -625,16 +618,18 @@ function ghost:path(cell)
 				printh 'intersection'
 			-- flag 4 means can't go up
 			local options = fget(rule, 4) and {0, 1, 3} or {0, 1, 2, 3}
-			spew{'initial options', options}
 			-- filter out directions that lead to walls
 			options = filter(options, function(d)
 				local c = cell + directions[d]
-				return not fget(mget(c.x, c.y), 1)
+				local s = mget(c.x, c.y)
+				local b = not fget(s, 1)
+				if state < 3 then
+					return b and not fget(s, 0)
+				end
 			end)
-			spew{'filtered options', options}
 			-- can't go backwards unless hitting dead end
 			if #options > 1 then del(options, revdir(dir)) end
-			spew{'post revdir filter', options}
+			spew{'options after filtering', options}
 			if state == 2 then
 				printh 'frightened'
 				-- frightened, select direction at random
@@ -642,35 +637,54 @@ function ghost:path(cell)
 			else
 				printh 'targeting'
 				local t
-				if state == 3 then
-					printh 'eyes'
-					-- eyes, target is starting position
-					-- or change state if already there
-					if self.pos == self.home then
-						printh 'now home'
-						self.counter = 0
-						ns = 4
-					else
-						t = self.home
-					end
-				elseif state == 0 then
+				if state == 0 then
 					printh 'chase'
 					-- chase
 					t = self:target(state, cell)
-				else
+				elseif state == 1 then
 					printh 'scatter'
 					-- scatter
 					t = self.scatterpoint
+				elseif state == 3 then
+					printh 'eyes'
+					-- eyes, target is starting position
+					-- or change state if already there
+					t = self.home
+					if cell == self.home then
+						printh 'now home'
+						self.counter = 0
+						ns = 4
+					end
+				elseif state == 4 then
+					printh 'caged'
+					-- currently in cage.
+					if self.counter >= self.plimit then
+						printh 'time to go'
+						-- time to leave
+						ns = 5
+						self.routine = cocreate(leave_home_statemachine)
+						coresume(self.routine, self)
+						t = self.nextstep
+					else
+						t = self.home -- stay put
+					end
+				elseif state == 5 then
+					printh 'leaving'
+					coresume(self.routine)
+					t = self.nextstep
+					ns = costatus(self.routine) and 0 or 5
 				end
 				printh('target is ' .. repr(t))
 				-- choose the direction with the least
 				-- straight-line distance to the target
-				nd = sort(options, function(d)
+				-- todo this function is never actually running?
+				local function kf(d)
 					printh('measuring direction '..d)
 					local c = cell + directions[d]
-					printh('distance from ' .. c .. ' to ' .. repr(t) .. ' is ' .. (c-t):mag())
+					printh('distance from ' .. repr(c) .. ' to ' .. repr(t) .. ' is ' .. (c-t):mag())
 					return (c - t):mag()
-				end)[1]
+				end
+				nd = sort(options, kf)[1]
 			end
 		else
 			-- not an intersection
@@ -682,14 +696,24 @@ function ghost:path(cell)
 	return ns, nd
 end
 
+function leave_home_statemachine(self)
+	-- target is just outside box
+	self.nextstep = vec2(13.5, 11)
+	-- target remains that until it gets there
+	repeat yield() until abs(self.pos.y * 8 - 11) < 2
+	-- then state is off to the left and the routine ends
+	self.nextstep = vec2(9, 11)
+end
+
 blinky = class(ghost)
 function blinky:init(x, y)
 	self.name = "blinky" -- for debugging
 	self.color = 8
-	self.state = 2
 	self.plimit = 0
 	self.scatterpoint = vec2(25,-3)
 	ghost.init(self, x, y)
+	self.state = 1
+	self.dir = 1
 end
 
 function blinky:target()
@@ -812,7 +836,7 @@ __map__
 1130202020203013113020203013113020203013113020202020301300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 2122222222412013212222410013110040222223112040222222222300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000112013010202510050510050020203112013000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0000000000112013113100003200003200003113112013000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000112013113100003231313200003113112013000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000112013110040222212122222410013112013000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 02020202025120505100132e2e00002e2e110050512050020202020200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 2e2e2e2e2e2e300000311331003131003111310000302e2e2e2e2e2e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
