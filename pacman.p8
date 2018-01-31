@@ -629,12 +629,14 @@ function ghost:path(cell)
 					-- currently in cage.
 					if self.counter > self.plimit then
 						-- time to leave
-						self.state = 2
+						self.state = 0
 					end
-				else
-					-- either chase or scatter,
-					-- target depends on ghost either way
+				elseif state == 0 then
+					-- chase
 					t = self:target(state, cell)
+				else
+					-- scatter
+					t = self.scatterpoint
 				end
 				-- choose the direction with the least
 				-- straight-line distance to the target
@@ -656,6 +658,7 @@ function blinky:init(x, y)
 	self.color = 8
 	self.state = 2
 	self.plimit = 0
+	self.scatterpoint = vec2(25,-3)
 	ghost.init(self, x, y)
 end
 
@@ -667,6 +670,7 @@ pinky = class(ghost)
 function pinky:init(x, y)
 	self.color = 14
 	self.plimit = 0
+	self.scatterpoint = vec2(2,-3)
 	ghost.init(self, x, y)
 end
 
@@ -678,6 +682,7 @@ inky = class(ghost)
 function inky:init(x, y)
 	self.color = 12
 	self.plimit = 30
+	self.scatterpoint = vec2(27,32)
 	ghost.init(self, x, y)
 end
 
@@ -689,6 +694,7 @@ clyde = class(ghost)
 function clyde:init(x, y)
 	self.color = 9
 	self.plimit = 60
+	self.scatterpoint = vec2(0,32)
 	ghost.init(self, x, y)
 end
 
