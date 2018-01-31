@@ -583,15 +583,34 @@ function ghost:update()
 end
 
 function ghost:path(cell)
+	printh("Pathing for ".. self.name)
+	spew{self}
+	-- todo movement problems:
+	-- todo fix non-intersection corners
+	-- todo special-case leaving the house
+	-- current
 	local state = self.state
 	local dir = self.dir
+	-- new
+	local ns = state
+	local nd = dir
 	-- first check if pathing is to be reevaluated
 	-- rules depend on state and global
-	local ns, nd -- new state and dir
+	-- default is to not change
 	if mode_frame and state < 2 then
+		printh 'reversing'
 		-- reverse state and direction
 		ns = (state + 1) % 2
 		nd = revdir(dir)
+	elseif state == 4 then
+		printh 'caged'
+		-- currently in cage.
+		if self.counter >= self.plimit then
+			printh 'leaving'
+			-- time to leave
+			ns = 0
+			nd = 0
+		end
 	else
 		-- not doing a reversal, so only redirect on
 		-- intersections, and state is the same
@@ -601,6 +620,7 @@ function ghost:path(cell)
 		-- of the middle of the lane
 		if fget(rule, 3)
 				and ((self.pos*8) - (cell*8)):mag() < 2 then
+				printh 'intersection'
 			-- flag 4 means can't go up
 			local options = fget(rule, 4) and {0, 1, 2, 3} or {0, 1, 3}
 			-- filter out directions that lead to walls
@@ -611,31 +631,29 @@ function ghost:path(cell)
 			-- can't go backwards unless hitting dead end
 			if #options > 1 then del(options, revdir(dir)) end
 			if state == 2 then
+				printh 'frightened'
 				-- frightened, select direction at random
 				nd = options[flr(rnd(#options)+1)]
 			else
+				printh 'targeting'
 				local t
 				if state == 3 then
+					printh 'eyes'
 					-- eyes, target is starting position
 					-- or change state if already there
-					-- todo make sure collision flags and pathing
-					-- actually lead to home
 					if self.pos == self.home then
-						self.state = 4
+						printh 'now home'
 						self.counter = 0
+						ns = 4
 					else
 						t = self.home
 					end
-				elseif state == 4 then
-					-- currently in cage.
-					if self.counter > self.plimit then
-						-- time to leave
-						self.state = 0
-					end
 				elseif state == 0 then
+					printh 'chase'
 					-- chase
 					t = self:target(state, cell)
 				else
+					printh 'scatter'
 					-- scatter
 					t = self.scatterpoint
 				end
@@ -651,11 +669,13 @@ function ghost:path(cell)
 			nd = dir
 		end
 	end
+	spew {ns, nd}
 	return ns, nd
 end
 
 blinky = class(ghost)
 function blinky:init(x, y)
+	self.name = "blinky" -- for debugging
 	self.color = 8
 	self.state = 2
 	self.plimit = 0
@@ -670,6 +690,7 @@ end
 
 pinky = class(ghost)
 function pinky:init(x, y)
+	self.name = "pinky" -- for debugging
 	self.color = 14
 	self.plimit = 0
 	self.scatterpoint = vec2(2,-3)
@@ -683,6 +704,7 @@ end
 
 inky = class(ghost)
 function inky:init(x, y)
+	self.name = "inky" -- for debugging
 	self.color = 12
 	self.plimit = 30
 	self.scatterpoint = vec2(27,32)
@@ -700,6 +722,7 @@ end
 
 clyde = class(ghost)
 function clyde:init(x, y)
+	self.name = "clyde" -- for debugging
 	self.color = 9
 	self.plimit = 60
 	self.scatterpoint = vec2(0,32)
