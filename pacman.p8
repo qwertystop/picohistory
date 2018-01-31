@@ -67,7 +67,7 @@ end
 --=============
 -- utils
 --=============
-function sort(args, keyfunc)
+function sort(list, keyfunc)
 	-- insertion, good enough
 	local keys = {}
 	keyfunc = keyfunc or function(v) return v end
@@ -82,6 +82,7 @@ function sort(args, keyfunc)
 			j -= 1
 		end
 	end
+	return list
 end
 
 -- list filtering
