@@ -71,7 +71,7 @@ function sort(list, keyfunc)
 	-- insertion, good enough
 	local keys = {}
 	keyfunc = keyfunc or function(v) return v end
-	for i = 1, #keys do
+	for i = 1, #list do
 		keys[i] = keyfunc(list[i])
 	end
 	for i = 2, #keys do
