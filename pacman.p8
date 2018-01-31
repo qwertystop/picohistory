@@ -663,7 +663,8 @@ function blinky:init(x, y)
 end
 
 function blinky:target()
-	-- todo
+	-- directly for pac-man
+	return pac.pos:round()
 end
 
 pinky = class(ghost)
@@ -675,7 +676,8 @@ function pinky:init(x, y)
 end
 
 function pinky:target()
-	-- todo
+	-- four tiles ahead of pac-man
+	return pac.pos:round() + directions[pac.dir] * 4
 end
 
 inky = class(ghost)
@@ -687,7 +689,12 @@ function inky:init(x, y)
 end
 
 function inky:target()
-	-- todo
+	-- twice as far from Blinky as the
+	-- spot two in front of Pac is from Blinky.
+	local ppos = pac.pos:round() + directions[pac.dir] * 2
+	local bpos = ghosts[1].pos:round()
+	-- bpos+(ppos-bpos)*2 reduces:
+	return (ppos * 2) - bpos
 end
 
 clyde = class(ghost)
@@ -699,7 +706,14 @@ function clyde:init(x, y)
 end
 
 function clyde:target()
-	-- todo
+	-- meanders around eight tiles from Pac
+	-- unless Pac gets close to his scatterpoint
+	local ppos = pac.pos:round()
+	if (ppos - self.pos:round()):mag() < 8 then
+		return self.scatterpoint
+	else
+		return ppos
+	end
 end
 __gfx__
 0000000000000000000000000000000000000aaaaaa0000000000aaaaaa0000000000aaaaaa0000000000aaaaaa0000000000aaaaaa0000000000aaaaaa00000
