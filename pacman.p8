@@ -588,13 +588,6 @@ function ghost:update()
 end
 
 function ghost:path(cell)
-	printh("pathing for ".. self.name)
-	spew{self}
-	-- todo movement problems:
-	-- todo choice of direction
-	-- todo special-case leaving the house
-	-- debug grep is:
-	-- grep -pazo "(?s)pathing for blinky.*?intersection.*?done pathing"
 	-- current
 	local state = self.state
 	local dir = self.dir
@@ -605,7 +598,6 @@ function ghost:path(cell)
 	-- rules depend on state and global
 	-- default is to not change
 	if mode_frame and state < 2 then
-		printh 'reversing'
 		-- reverse state and direction
 		ns = (state + 1) % 2
 		nd = revdir(dir)
@@ -617,7 +609,6 @@ function ghost:path(cell)
 		-- not doing a reversal, so only redirect on
 		-- intersections or if leaving the cage
 		if state == 4 then
-			printh 'caged'
 			-- currently in cage.
 			if self.counter >= self.plimit then
 				t = self:begin_leaving()
@@ -626,36 +617,26 @@ function ghost:path(cell)
 				t = self.home -- stay put
 			end
 		elseif state == 5 then
-			printh 'leaving'
 			coresume(self.routine)
 			t = self.nextstep
 			ns = costatus(self.routine) == 'dead' and 0 or 5
 		elseif fget(mget(cell.x, cell.y), 3) then
 			-- only turn at intersections and when within one pixel
 			-- of the middle of the lane
-			printh 'intersection'
-			spew{'options after filtering', options}
-
 			if state == 2 then
-				printh 'frightened'
 				-- frightened
 				nd = options[flr(rnd(#options)+1)]
 			else
-				printh 'targeting'
 				if state == 0 then
-					printh 'chase'
 					-- chase
 					t = self:target(state, cell)
 				elseif state == 1 then
-					printh 'scatter'
 					-- scatter
 					t = self.scatterpoint
 				elseif state == 3 then
-					printh 'eyes'
 					-- eyes
 					t = self.home
 					if cell == self.home then
-						printh 'now home'
 						self.counter = 0
 						ns = 4
 					end
@@ -666,25 +647,19 @@ function ghost:path(cell)
 			t = self:target(state, cell)
 		end
 		if state != 2 then
-			printh('target is ' .. repr(t))
 			-- choose the direction with the least
 			-- straight-line distance to the target
 			local function kf(d)
-				printh('measuring direction '..d)
 				local c = cell + directions[d]
-				printh('distance from ' .. repr(c) .. ' to ' .. repr(t) .. ' is ' .. (c-t):mag())
 				return (c - t):mag()
 			end
 			nd = sort(options, kf)[1]
 		end
 	end
-	spew {ns, nd}
-	printh "done pathing"
 	return ns, nd
 end
 
 function ghost:begin_leaving()
-		printh 'time to go'
 		-- time to leave
 		self.routine = cocreate(leave_home_statemachine)
 		coresume(self.routine, self)
