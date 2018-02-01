@@ -42,6 +42,8 @@ function repr(t)
 		return "<nil>"
 	elseif type(t) == "function" then
 		return "<function>"
+	elseif type(t) == "thread" then
+		return "<thread>"
 	elseif type(t) ~= "table" then
 		return "" .. t
 	elseif t.__repr then
