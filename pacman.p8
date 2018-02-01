@@ -694,7 +694,7 @@ function find_valid_directions(cell, state, dir)
 		local c = cell + directions[d]
 		local s = mget(c.x, c.y)
 		local b = not fget(s, 1)
-		return b and state >= 3 or not fget(s, 0)
+		return b and (state == 3 or state == 5 or not fget(s, 0))
 		end)
 		-- can't go backwards unless dead-end
 		if #options > 1 then del(options, revdir(dir)) end
