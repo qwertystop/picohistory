@@ -550,6 +550,7 @@ function ghost:init(x, y)
 	-- 4: in cage
 	-- 5: following specific routine
 	self.state = 4
+	self.dir = 1
 end
 
 function ghost:draw()
@@ -676,9 +677,6 @@ function ghost:path(cell)
 				end
 				nd = sort(options, kf)[1]
 			end
-		else
-			-- not an intersection
-			nd = dir
 		end
 	end
 	spew {ns, nd}
@@ -712,11 +710,11 @@ end
 
 blinky = class(ghost)
 function blinky:init(x, y)
+	ghost.init(self, x, y)
 	self.name = "blinky" -- for debugging
 	self.color = 8
 	self.plimit = 0
 	self.scatterpoint = vec2(25,-3)
-	ghost.init(self, x, y)
 	self.state = 1
 	self.dir = 1
 end
@@ -728,11 +726,11 @@ end
 
 pinky = class(ghost)
 function pinky:init(x, y)
+	ghost.init(self, x, y)
 	self.name = "pinky" -- for debugging
 	self.color = 14
 	self.plimit = 0
 	self.scatterpoint = vec2(2,-3)
-	ghost.init(self, x, y)
 end
 
 function pinky:target()
@@ -742,11 +740,11 @@ end
 
 inky = class(ghost)
 function inky:init(x, y)
+	ghost.init(self, x, y)
 	self.name = "inky" -- for debugging
 	self.color = 12
 	self.plimit = 30
 	self.scatterpoint = vec2(27,32)
-	ghost.init(self, x, y)
 end
 
 function inky:target()
@@ -760,11 +758,11 @@ end
 
 clyde = class(ghost)
 function clyde:init(x, y)
+	ghost.init(self, x, y)
 	self.name = "clyde" -- for debugging
 	self.color = 9
 	self.plimit = 60
 	self.scatterpoint = vec2(0,32)
-	ghost.init(self, x, y)
 end
 
 function clyde:target()
