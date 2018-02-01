@@ -586,13 +586,13 @@ function ghost:update()
 end
 
 function ghost:path(cell)
-	printh("Pathing for ".. self.name)
+	printh("pathing for ".. self.name)
 	spew{self}
 	-- todo movement problems:
 	-- todo choice of direction
 	-- todo special-case leaving the house
 	-- debug grep is:
-	-- grep -Pazo "(?s)Pathing for blinky.*?intersection.*?done pathing"
+	-- grep -pazo "(?s)pathing for blinky.*?intersection.*?done pathing"
 	-- current
 	local state = self.state
 	local dir = self.dir
@@ -748,8 +748,8 @@ function inky:init(x, y)
 end
 
 function inky:target()
-	-- twice as far from Blinky as the
-	-- spot two in front of Pac is from Blinky.
+	-- twice as far from blinky as the
+	-- spot two in front of pac is from blinky.
 	local ppos = pac.pos:round() + directions[pac.dir] * 2
 	local bpos = ghosts[1].pos:round()
 	-- bpos+(ppos-bpos)*2 reduces:
@@ -766,8 +766,8 @@ function clyde:init(x, y)
 end
 
 function clyde:target()
-	-- meanders around eight tiles from Pac
-	-- unless Pac gets close to his scatterpoint
+	-- meanders around eight tiles from pac
+	-- unless pac gets close to his scatterpoint
 	local ppos = pac.pos:round()
 	if (ppos - self.pos:round()):mag() < 8 then
 		return self.scatterpoint
