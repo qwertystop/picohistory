@@ -610,26 +610,37 @@ function ghost:path(cell)
 		ns = (state + 1) % 2
 		nd = revdir(dir)
 	else
+		local t
+		local options = find_valid_directions(cell, state, dir)
 		-- not doing a reversal, so only redirect on
-		-- intersections, and state is the same
-		ns = state
-		local rule = mget(cell.x, cell.y)
-		-- only turn at intersections and when within one pixel
-		-- of the middle of the lane
-		if fget(rule, 3)
+		-- intersections or if leaving the cage
+		if state == 4 then
+			printh 'caged'
+			-- currently in cage.
+			if self.counter >= self.plimit then
+				t = self:begin_leaving()
+				ns = 5
+			else
+				t = self.home -- stay put
+			end
+		elseif state == 5 then
+			printh 'leaving'
+			coresume(self.routine)
+			t = self.nextstep
+			ns = costatus(self.routine) == 'dead' and 0 or 5
+		elseif fget(mget(cell.x, cell.y), 3)
 				and ((self.pos*8) - (cell*8)):mag() < 2 then
+			-- only turn at intersections and when within one pixel
+			-- of the middle of the lane
 			printh 'intersection'
-
-			local options = find_valid_directions(cell, state, dir)
 			spew{'options after filtering', options}
 
 			if state == 2 then
 				printh 'frightened'
-				-- frightened, select direction at random
+				-- frightened
 				nd = options[flr(rnd(#options)+1)]
 			else
 				printh 'targeting'
-				local t
 				if state == 0 then
 					printh 'chase'
 					-- chase
@@ -640,50 +651,43 @@ function ghost:path(cell)
 					t = self.scatterpoint
 				elseif state == 3 then
 					printh 'eyes'
-					-- eyes, target is starting position
-					-- or change state if already there
+					-- eyes
 					t = self.home
 					if cell == self.home then
 						printh 'now home'
 						self.counter = 0
 						ns = 4
 					end
-				elseif state == 4 then
-					printh 'caged'
-					-- currently in cage.
-					if self.counter >= self.plimit then
-						printh 'time to go'
-						-- time to leave
-						ns = 5
-						self.routine = cocreate(leave_home_statemachine)
-						coresume(self.routine, self)
-						t = self.nextstep
-					else
-						t = self.home -- stay put
-					end
-				elseif state == 5 then
-					printh 'leaving'
-					coresume(self.routine)
-					t = self.nextstep
-					ns = costatus(self.routine) and 0 or 5
 				end
-				printh('target is ' .. repr(t))
-				-- choose the direction with the least
-				-- straight-line distance to the target
-				-- todo this function is never actually running?
-				local function kf(d)
-					printh('measuring direction '..d)
-					local c = cell + directions[d]
-					printh('distance from ' .. repr(c) .. ' to ' .. repr(t) .. ' is ' .. (c-t):mag())
-					return (c - t):mag()
-				end
-				nd = sort(options, kf)[1]
 			end
+		else
+			-- if we somehow end up not having a target?
+			t = self:target(state, cell)
+		end
+		if state != 2 then
+			printh('target is ' .. repr(t))
+			-- choose the direction with the least
+			-- straight-line distance to the target
+			local function kf(d)
+				printh('measuring direction '..d)
+				local c = cell + directions[d]
+				printh('distance from ' .. repr(c) .. ' to ' .. repr(t) .. ' is ' .. (c-t):mag())
+				return (c - t):mag()
+			end
+			nd = sort(options, kf)[1]
 		end
 	end
 	spew {ns, nd}
 	printh "done pathing"
 	return ns, nd
+end
+
+function ghost:begin_leaving()
+		printh 'time to go'
+		-- time to leave
+		self.routine = cocreate(leave_home_statemachine)
+		coresume(self.routine, self)
+		return self.nextstep
 end
 
 function find_valid_directions(cell, state, dir)
