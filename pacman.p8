@@ -563,9 +563,6 @@ function ghost:draw()
 		sp = self.sprs[self.dir]
 	end
 	thing.draw(self, sp, self.dir == 0, false)
-	-- debugging
-	-- local t = self:target(self.pos:round()) * 8
-	-- rectfill(t.x - 2, t.y - 2, t.x + 2, t.y + 2, self.color)
 end
 
 function ghost:update()
@@ -603,7 +600,7 @@ function ghost:update()
 	if cell == pac.pos:round() then
 		-- someone's getting et
 		if self.state < 2 then
-			printh('would be caught, but disabled for debugging') -- lose = true
+			lose = true
 		elseif self.state == 2 then
 			self.state = 3
 		end
