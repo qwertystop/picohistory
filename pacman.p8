@@ -433,14 +433,14 @@ function thing:init(x, y)
 	self.dir = 4
 end
 
-function thing:move(flag, vel)
+function thing:move(flags, vel)
 	local pos = self.pos
 	local dir = self.dir
 	if dir ~= 4 then
 		local cell = pos:round()
 		local target = (pos + (directions[dir] * 0.7)):round()
 		-- check if we're within half a cell of hitting the wall
-		if not fget(mget(target.x, target.y), flag) then
+		if not any(flags, function(f) return fget(mget(target.x, target.y), f) end) then
 			self.pos += (directions[dir] * vel)
 		end
 		-- nudge towards path center
@@ -526,9 +526,9 @@ function pacman:update()
 	elseif power > 0 then
 		-- eating causes one-frame pause
 		-- energizers cause speed up
-		self:move(0, vel * 1.1)
+		self:move({0}, vel * 1.1)
 	else
-		self:move(0, vel)
+		self:move({0}, vel)
 	end
 	self.pos.x = self.pos.x % 28
 end
@@ -576,13 +576,28 @@ function ghost:update()
 		self.state = 2
 	elseif self.state == 2 and power == 0 then 
 		self.state = self.oldstate
+	elseif state == 3 and cell == self.home:round() then
+		self.counter = 0
+		ns = 4
 	end
+	-- get path
 	self.state, self.dir = self:path(cell)
+	-- move
+	local state = self.state
+	local spd
+	local flag
 	if self.state == 2 then
-		self:move(1, vel * 0.7)
+		spd = vel * 0.7
 	else
-		self:move(1, vel * 0.98)
+		spd = vel * 0.98
 	end
+	if state == 3 or state == 5 then
+		-- can pass through gate on way in and out
+		flag = {1}
+	else
+		flag = {0, 1}
+	end
+	self:move(flag, spd)
 	if cell == pac.pos:round() then
 		-- someone's getting et
 		if self.state < 2 then
@@ -629,10 +644,6 @@ function ghost:path(cell)
 		elseif fget(mget(cell.x, cell.y), 3) then
 			-- only turn at intersections and when within one pixel
 			-- of the middle of the lane
-			if state == 2 then
-				-- frightened
-				nd = options[flr(rnd(#options)+1)]
-			else
 				if state == 0 then
 					-- chase
 					t = self:target(state, cell)
@@ -642,17 +653,18 @@ function ghost:path(cell)
 				elseif state == 3 then
 					-- eyes
 					t = self.home
-					if cell == self.home then
-						self.counter = 0
-						ns = 4
-					end
 				end
-			end
+			--end
 		else
 			-- if we somehow end up not having a target?
 			t = self:target(state, cell)
 		end
-		if state != 2 then
+		if state == 2 and ((self.pos * 8) - (cell * 8)):mag() < 2 then
+			-- unsure why frightened breaks on corners,
+			-- this is a patchjob.
+			-- moving it to here shouldn't matter but does?
+			nd = options[flr(rnd(#options)+1)]
+		else
 			-- choose the direction with the least
 			-- straight-line distance to the target
 			local function kf(d)
