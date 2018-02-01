@@ -709,7 +709,7 @@ function leave_home_statemachine(self)
 	-- target is just outside box
 	self.nextstep = vec2(13.5, 11)
 	-- target remains that until it gets there
-	repeat yield() until abs(self.pos.y * 8 - 11) < 2
+	repeat yield() until abs(self.pos.y - 11) * 8 < 2
 	-- then state is off to the left and the routine ends
 	self.nextstep = vec2(9, 11)
 end
