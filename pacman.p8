@@ -609,7 +609,9 @@ function ghost:path(cell)
 		-- reverse state and direction
 		ns = (state + 1) % 2
 		nd = revdir(dir)
-	else
+	elseif ((self.pos * 8) - (cell * 8)):mag() < 2 then
+		-- only reevaluate direction once per cell,
+		-- in the middle
 		local t
 		local options = find_valid_directions(cell, state, dir)
 		-- not doing a reversal, so only redirect on
@@ -628,8 +630,7 @@ function ghost:path(cell)
 			coresume(self.routine)
 			t = self.nextstep
 			ns = costatus(self.routine) == 'dead' and 0 or 5
-		elseif fget(mget(cell.x, cell.y), 3)
-				and ((self.pos*8) - (cell*8)):mag() < 2 then
+		elseif fget(mget(cell.x, cell.y), 3) then
 			-- only turn at intersections and when within one pixel
 			-- of the middle of the lane
 			printh 'intersection'
