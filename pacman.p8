@@ -505,19 +505,8 @@ function pacman:update()
 	end
 	local cell = self.pos:round()
 	local p = mget(cell.x, cell.y)
-	local pelcell = fget(p, 2)
-	if not pelcell then
-		-- eating causes one-frame pause
-		-- energizers cause speed up
-		if power > 0 then
-			self:move(0, vel * 1.1)
-		else
-			self:move(0, vel)
-		end
-	end
-	self.pos.x = self.pos.x % 28
-	-- clear pellets
-	if pelcell then
+	if fget(p, 2) then -- pellet
+		-- clear, but don't lose pathing flags
 		mset(cell.x, cell.y, pelletmap[p])
 		pelletcount -= 1
 		if pelletcount == 0 then
@@ -525,7 +514,7 @@ function pacman:update()
 		end
 		if p == 16 or p == 62 then
 			-- energizer
-			power = 150 -- can't find timing docs
+			power = 150
 		end
 		-- a ghost counts up
 		for g in all(ghosts) do
@@ -534,7 +523,14 @@ function pacman:update()
 				break
 			end
 		end
+	elseif power > 0 then
+		-- eating causes one-frame pause
+		-- energizers cause speed up
+		self:move(0, vel * 1.1)
+	else
+		self:move(0, vel)
 	end
+	self.pos.x = self.pos.x % 28
 end
 -->8
 ghost = class(thing)
