@@ -563,10 +563,20 @@ function ghost:draw()
 		sp = self.sprs[self.dir]
 	end
 	thing.draw(self, sp, self.dir == 0, false)
+	-- debugging
+	-- local t = self:target(self.pos:round()) * 8
+	-- rectfill(t.x - 2, t.y - 2, t.x + 2, t.y + 2, self.color)
 end
 
 function ghost:update()
 	local cell = self.pos:round()
+	-- state adjustment
+	if power > 0 and self.state < 2 then
+		self.oldstate = self.state
+		self.state = 2
+	elseif self.state == 2 and power == 0 then 
+		self.state = self.oldstate
+	end
 	self.state, self.dir = self:path(cell)
 	if self.state == 2 then
 		self:move(1, vel * 0.7)
