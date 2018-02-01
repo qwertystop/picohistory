@@ -615,21 +615,11 @@ function ghost:path(cell)
 		-- of the middle of the lane
 		if fget(rule, 3)
 				and ((self.pos*8) - (cell*8)):mag() < 2 then
-				printh 'intersection'
-			-- flag 4 means can't go up
-			local options = fget(rule, 4) and {0, 1, 3} or {0, 1, 2, 3}
-			-- filter out directions that lead to walls
-			options = filter(options, function(d)
-				local c = cell + directions[d]
-				local s = mget(c.x, c.y)
-				local b = not fget(s, 1)
-				if state < 3 then
-					return b and not fget(s, 0)
-				end
-			end)
-			-- can't go backwards unless hitting dead end
-			if #options > 1 then del(options, revdir(dir)) end
+			printh 'intersection'
+
+			local options = find_valid_directions(cell, state, dir)
 			spew{'options after filtering', options}
+
 			if state == 2 then
 				printh 'frightened'
 				-- frightened, select direction at random
@@ -694,6 +684,21 @@ function ghost:path(cell)
 	spew {ns, nd}
 	printh "done pathing"
 	return ns, nd
+end
+
+function find_valid_directions(cell, state, dir)
+	-- if cell has flag 4, can't go up
+	local options = fget(mget(cell.x, cell.y), 4) and {0, 1, 3} or {0, 1, 2, 3}
+	-- filter out any walls
+	options = filter(options, function(d)
+		local c = cell + directions[d]
+		local s = mget(c.x, c.y)
+		local b = not fget(s, 1)
+		return b and state >= 3 or not fget(s, 0)
+		end)
+		-- can't go backwards unless dead-end
+		if #options > 1 then del(options, revdir(dir)) end
+		return options
 end
 
 function leave_home_statemachine(self)
