@@ -61,9 +61,24 @@ local world = {
 	room(19,9,0,16,13),
 	room(20,7,14,0,11)
 }
+ 
 local function populate(rooms)
-	-- todo place pits, bats, wumpus
-	-- return player location not same as any of those
+	-- place two bats and two pits, no overlap
+	local avail = {}
+	for i=1,20 do
+		add(avail,i)
+	end
+	for key in {'bat', 'pit'} do
+		for i=1,2 do
+			local n = pick(avail)
+			world[n][key] = true
+			del(avail, n)
+		end
+	end
+	-- return two unused locations, for player and wumpus
+	local w = pick(avail)
+	del(avail, w)
+	return w, pick(avail)
 end
 __gfx__
 0000000022222222222040222222210422222222001110000000011000010000100001100000000000000000000000009999999923299999999999440000011e
