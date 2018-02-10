@@ -61,7 +61,29 @@ function room:status()
 end
 
 function room:draw()
-	-- todo draw the room
+	-- first draw the bit that's always the same
+	map(0,0,0,0,16,15)
+	-- then place the doors
+	local dir_args = {
+		{1,16,4,56,8,3,3},
+		{2,17,1,120,56,1,3},
+		{3,16,0,56,112,3,1},
+		{4,16,3,0,56,1,3}
+	}
+	palt(0, false)
+	for i,mx,my,px,py,w,h in dir_args do
+		if self.conn[i] ~= 0 then
+			map(mx,my,px,py,w,h)
+		end
+	end
+	-- and the pit
+	if self.pit then
+		palt(14, true)
+		map(19,0,40,44,6,6)
+	end
+	palt()
+	-- bats and wumpus move,
+	-- so they get handled separately
 end
 
 local world = {
