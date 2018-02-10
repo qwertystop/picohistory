@@ -56,9 +56,11 @@ end
 -- the wumpus
 --=============
 local wumpus = {} -- singleton
--- todo
 function wumpus:move_adj()
-	-- todo
+	-- move to an adjacent room
+	local new_room = pick(world[self.i].conn)
+	self.i = new_room.i
+	self:nearness()
 end
 
 function wumpus:nearness()
