@@ -30,15 +30,40 @@ function class(base, proto)
 end
 -->8
 --=============
+-- the player
+--=============
+local player = {} -- singleton
+-- todo
+-->8
+--=============
+-- the wumpus
+--=============
+local wumpus = {} -- singleton
+-- todo
+-->8
+--=============
 -- the world
 --=============
 local palette = {} -- todo
+
 local room = class()
 function room:init(i,n,e,s,w)
 	self.i = i
 	self.conn = {n,e,s,w}
 	self.moss = pick(palette)
+	self.pit = false
+	self.bat = false
 end
+
+function room:status()
+	-- todo determine what warnings
+	-- bats or pit within 1, wumpus within 2
+end
+
+function room:draw()
+	-- todo draw the room
+end
+
 local world = {
 	room(1,0,6,13,10),
 	room(2,7,3,0,8),
@@ -80,6 +105,10 @@ local function populate(rooms)
 	del(avail, w)
 	return w, pick(avail)
 end
+-->8
+--=============
+-- the game hooks
+--=============
 __gfx__
 0000000022222222222040222222210422222222001110000000011000010000100001100000000000000000000000009999999923299999999999440000011e
 00000000292222222110b02222221104222922221111111111111111111111111111111109aa9aa9aa9aaa9aaa9aa9a09999999923294444499994220000001e
