@@ -13,6 +13,15 @@ local function pick(list)
 	return flr(rnd(#list))+1
 end
 
+function any(list, condition)
+	for i=1,#list do
+		if condition(list[i]) then
+			return true
+		end
+	end
+	return false
+end
+
 -- classes
 function class(base, proto)
 	proto = proto or {}
@@ -53,7 +62,19 @@ function wumpus:move_adj()
 end
 
 function wumpus:nearness()
-	-- todo sets rooms near-wumpus-ness
+	-- sets rooms near-wumpus-ness
+	local room = world[self.i]
+	room.near_wump = true
+	for one_degree in room.conn do
+		if one_degree ~= 0 then
+			world[one_degree].near_wump = true
+		end
+		for two_degrees in world[one_degree].conn do
+			if two_degrees ~= 0 then
+				world[two_degrees].near_wump = true
+			end
+		end
+	end
 end
 
 function wumpus_animator()
@@ -82,8 +103,10 @@ function room:init(i,n,e,s,w)
 end
 
 function room:status()
-	-- todo determine what warnings
-	-- bats or pit within 1, wumpus within 2
+	-- determine what warnings to play
+	local b = self.bat or any(self.conn, function(me) return me.bat end)
+	local p = self.pit or any(self.conn, function(me) return me.pit end)
+	return b, p, self.near_wump
 end
 
 function room:draw()
