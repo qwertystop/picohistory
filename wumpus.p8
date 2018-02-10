@@ -42,9 +42,11 @@ end
 -- the player
 --=============
 local player = {} -- singleton
--- todo
 function player:loop()
-	-- todo
+	while true do
+		-- todo await input
+		-- todo loop movement or firing until resolved
+	end
 end
 
 function player:draw()
@@ -80,14 +82,18 @@ function wumpus:nearness()
 end
 
 function wumpus_animator()
-	-- todo
+	-- todo runs when player enters wumpus room
 end
 -->8
 --=============
--- bats
+-- bats and pits
 --=============
 function bat_animator()
-	-- todo
+	-- todo runs when player enters bat room
+end
+
+function pit_animator()
+	-- todo runs when player enters pit room
 end
 --=============
 -- the world
