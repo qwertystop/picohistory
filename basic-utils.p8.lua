@@ -99,6 +99,13 @@ function any(list, condition)
 	end
 	return false
 end
+
+-- 15 symbols for pick, plus three per call
+-- 8 per call to inline
+-- cheaper if used thrice
+local function pick(list)
+	return flr(rnd(#list))+1
+end
 	
 -- beta distribution, for small
 -- positive integer a and b.
