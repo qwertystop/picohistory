@@ -34,13 +34,38 @@ end
 --=============
 local player = {} -- singleton
 -- todo
+function player:loop()
+	-- todo
+end
+
+function player:draw()
+	-- todo
+	-- draws player and/or arrow
+end
 -->8
 --=============
 -- the wumpus
 --=============
 local wumpus = {} -- singleton
 -- todo
+function wumpus:move_adj()
+	-- todo
+end
+
+function wumpus:nearness()
+	-- todo sets rooms near-wumpus-ness
+end
+
+function wumpus_animator()
+	-- todo
+end
 -->8
+--=============
+-- bats
+--=============
+function bat_animator()
+	-- todo
+end
 --=============
 -- the world
 --=============
@@ -53,6 +78,7 @@ function room:init(i,n,e,s,w)
 	self.moss = pick(palette)
 	self.pit = false
 	self.bat = false
+	self.near_wump = false
 end
 
 function room:status()
@@ -131,6 +157,17 @@ end
 --=============
 -- the game hooks
 --=============
+function _init()
+	-- todo
+end
+
+function _update()
+	-- todo
+end
+
+function _draw()
+	-- todo
+end
 __gfx__
 0000000022222222222040222222210422222222001110000000011000010000100001100000000000000000000000009999999923299999999999440000011e
 00000000292222222110b02222221104222922221111111111111111111111111111111109aa9aa9aa9aaa9aaa9aa9a09999999923294444499994220000001e
