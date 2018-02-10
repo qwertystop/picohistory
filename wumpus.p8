@@ -1,7 +1,70 @@
 pico-8 cartridge // http://www.pico-8.com
 version 15
 __lua__
+--picohistory: wumpus
+--by david heyman
+--=============
+-- utils
+--=============
+-- 15 symbols for pick, plus three per call
+-- 8 per call to inline
+-- cheaper if used thrice
+local function pick(list)
+	return flr(rnd(#list))+1
+end
 
+-- classes
+function class(base, proto)
+	proto = proto or {}
+	proto.__index = proto
+	local meta = {__index = base}
+	setmetatable(proto, meta)
+	function meta:__call(...)
+		local this = setmetatable({}, self)
+		if this.init then
+			this:init(...)
+		end
+		return this
+	end
+	return proto
+end
+-->8
+--=============
+-- the world
+--=============
+local palette = {} -- todo
+local room = class()
+function room:init(i,n,e,s,w)
+	self.i = i
+	self.conn = {n,e,s,w}
+	self.moss = pick(palette)
+end
+local world = {
+	room(1,0,6,13,10),
+	room(2,7,3,0,8),
+	room(3,2,11,0,9),
+	room(4,10,5,8,0),
+	room(5,15,0,7,4),
+	room(6,8,9,0,1),
+	room(7,0,20,2,5),
+	room(8,0,2,6,4),
+	room(9,0,3,19,6),
+	room(10,4,1,0,17),
+	room(11,0,20,16,3),
+	room(12,13,18,17,0),
+	room(13,1,19,0,12),
+	room(14,0,15,18,20),
+	room(15,5,17,0,14),
+	room(16,19,11,18,0)
+	room(17,0,10,12,15),
+	room(18,16,0,14,12),
+	room(19,9,0,16,13),
+	room(20,7,14,0,11)
+}
+local function populate(rooms)
+	-- todo place pits, bats, wumpus
+	-- return player location not same as any of those
+end
 __gfx__
 0000000022222222222040222222210422222222001110000000011000010000100001100000000000000000000000009999999923299999999999440000011e
 00000000292222222110b02222221104222922221111111111111111111111111111111109aa9aa9aa9aaa9aaa9aa9a09999999923294444499994220000001e
