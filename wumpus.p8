@@ -171,7 +171,8 @@ local player = {} -- singleton
 function player:init(i)
 	self.pos = vec2(60,60)
 	self.i = i
-	self.dir = 3 -- south (enumerated n,e,s,w)
+	self.dir = 4 -- south (enumerated w,e,n,s)
+	self.dirsprites = {96,98,66,64}
 	local c = cocreate(self.loop)
 	-- first call is just to assign self inside the coroutine
 	coresume(c, self)
@@ -232,8 +233,10 @@ local function player:arrow()
 end
 
 function player:draw()
-	-- todo
 	-- draws player
+	local p = self.pos
+	local s = self.dirsprites[self.dir]
+	spr(s, p.x, p.y, 2, 2)
 end
 -->8
 --=============
