@@ -300,6 +300,12 @@ function bat_animator()
 		spr(s, pos.x, pos.y)
 		yield()
 	until pos - player.pos < 4
+	-- half-a-second of black screen
+	for i=1,15 do
+		cls()
+		yield()
+	end
+	-- then let the player handle the new room entry
 end
 
 function pit_animator()
