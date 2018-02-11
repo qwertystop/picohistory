@@ -198,8 +198,7 @@ end
 local player = {} -- singleton
 
 function player:init(i)
-	self.x = 60
-	self.y = 60
+	self.pos = vec2(60,60)
 	self.i = i
 	self.dir = 3 -- south (enumerated n,e,s,w)
 	local c = cocreate(self.loop)
