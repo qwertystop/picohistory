@@ -201,9 +201,27 @@ end
 
 function player:loop()
 	yield() -- this just gets self assigned
+	local b
 	while true do
-		-- todo await input
-		-- todo loop movement or firing until resolved
+		-- input section
+		b = false
+		repeat -- await input
+			-- poll buttons
+			for i=0,5 do
+				if btn(0, i) then b = i end
+			end
+			yield()
+		until b
+		-- now react to input
+		-- 0-3: move. 4: shoot. 5: repeat audio cues.
+		if b <= 3 then
+			-- todo move to next room
+			-- todo react to contents
+		elseif b == 4 then
+			-- todo take shooting directions, shoot
+		else
+			-- todo replay audio cues
+		end
 	end
 end
 
