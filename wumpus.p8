@@ -247,13 +247,13 @@ function wumpus:is_near(i)
 		return true
 	else
 		local room = world[self.i]
-		-- check rooms one away
+		-- check rooms one away from wump
 		for j in room.conn do
 			if j == i then
 				return true
 			elseif j ~= 0 then 
 				local one_degree = world[j]
-				-- check rooms two away
+				-- check rooms two away from wump
 				for k in one_degree.conn do
 					if k == i then
 						return true
