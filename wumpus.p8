@@ -141,26 +141,12 @@ function vec2:__sub(other)
 end
 
 function vec2:__lt(other)
-	return self:mag() < other:mag()
-
--- paired multiplication
-function vec2:elemx(other)
-	return vec2(
-		self.x * other.x,
-		self.y * other.y)
-end
+	return self:mag() < other
 
 -- magnitude
 function vec2:mag()
 	return sqrt(self.x * self.x +
 		self.y * self.y)
-end
-
--- box at other, this size
-function vec2:at(anchor)
-	return box(
-		anchor.x, anchor.y,
-		self.x, self.y)
 end
 
 -- get unit vectors
@@ -176,21 +162,6 @@ end
 function vec2:round()
 	return vec2(flr(self.x + 0.5), flr(self.y + 0.5))
 end
-
-function heading(angle)
-	return vec2(cos(angle), sin(angle))
-end
-
--- random point on unit circle
-function randir()
-	local p
-	repeat
-	p = vec2(beta(3,3),
-		beta(3,3)):unit()
-	until(p.x > 0 or p.y > 0)
-	return p
-end
-
 -->8
 --=============
 -- the player
