@@ -219,8 +219,10 @@ function player:loop()
 			-- todo react to contents
 		elseif b == 4 then
 			-- todo take shooting directions, shoot
-		else
-			-- todo replay audio cues
+		else -- b == 5
+			-- replay audio cues
+			play_cues()
+			yield()
 		end
 	end
 end
@@ -372,6 +374,13 @@ local function populate(rooms)
 	return w, pick(avail)
 end
 -->8
+--=============
+-- audio
+--=============
+local function play_cues()
+	local bat, pit, wump = world[player.i]:status()
+	-- todo actually play audio
+end
 --=============
 -- the game hooks
 --=============
