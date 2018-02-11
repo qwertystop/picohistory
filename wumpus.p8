@@ -173,10 +173,9 @@ function player:init(i)
 	self.i = i
 	self.dir = 4 -- south (enumerated w,e,n,s)
 	self.dirsprites = {96,98,66,64}
-	local c = cocreate(self.loop)
+	self.update = cocreate(self.loop)
 	-- first call is just to assign self inside the coroutine
-	coresume(c, self)
-	self.update = function() coresume(c) end
+	coresume(self.update, self)
 end
 
 function player:loop()
@@ -417,17 +416,15 @@ function _init()
 	world = world_init()
 	local p, w = populate(world)
 	player:init(p)
-	wumpus:init(w)
+	wumpus.i = w
 	extra_draws = {}
 end
 
 function _update()
-	-- todo
-	player.update()
+	coresume(player.update)
 end
 
 function _draw()
-	-- todo
 	cls()
 	local room_index = player.i
 	world[room_index]:draw()
