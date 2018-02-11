@@ -3,6 +3,66 @@ version 15
 __lua__
 --picohistory: wumpus
 --by david heyman
+--===========
+-- debugging
+--===========
+reprdepth = 0
+function _tablerepr(t)
+	if reprdepth > 1 then
+		return "<table>"
+	end
+
+	reprdepth += 1
+	local first = true
+	local ret = "{"
+	for k, v in pairs(t) do
+		if not first then
+			ret = ret .. ", "
+		end
+		first = false
+		local rv
+		if v == t then
+			rv = "<...>"
+		else
+			rv = repr(v)
+		end
+		ret = ret .. repr(k) .. ": " .. rv
+	end
+	reprdepth -= 1
+	return ret .. "}"
+end
+
+function repr(t)
+	if t == true then
+		return "<true>"
+	elseif t == false then
+		return "<false>"
+	elseif t == nil then
+		return "<nil>"
+	elseif type(t) == "function" then
+		return "<function>"
+	elseif type(t) ~= "table" then
+		return "" .. t
+	elseif t.__repr then
+		return t:__repr()
+	elseif t.__name then
+		return "<object/" .. t.__name .. " " .. _tablerepr(t) .. ">"
+	elseif t.new then
+		return "<object " .. _tablerepr(t) .. ">"
+	else
+		return _tablerepr(t)
+	end
+end
+
+function spew(arg)
+	local out = ""
+	for s in all(arg) do
+		out = out .. repr(s) .. " "
+	end
+	printh(out)
+end
+
+-->8
 --=============
 -- utils
 --=============
@@ -37,6 +97,91 @@ function class(base, proto)
 	end
 	return proto
 end
+
+-- pair vectors
+vec2 = class()
+function vec2:init(x,y)
+	self.x = x or 0
+	self.y = y or 0
+end
+
+function vec2:copy()
+	return vec2(self.x, self.y)
+end
+
+function vec2:__repr()
+	return "<vec2 " .. self.x .. ", " .. self.y .. ">"
+end
+
+function vec2:__add(other)
+	return vec2(
+		self.x + other.x,
+		self.y + other.y)
+end
+
+function vec2:__mul(n)
+		return vec2(
+		self.x * n,
+		self.y * n)
+end
+
+function vec2:__sub(other)
+	-- if performance is problem,
+	-- can inline (cost: symcount)
+	return self + other * -1
+end
+
+function vec2:__lt(other)
+	return self:mag() < other:mag()
+
+-- paired multiplication
+function vec2:elemx(other)
+	return vec2(
+		self.x * other.x,
+		self.y * other.y)
+end
+
+-- magnitude
+function vec2:mag()
+	return sqrt(self.x * self.x +
+		self.y * self.y)
+end
+
+-- box at other, this size
+function vec2:at(anchor)
+	return box(
+		anchor.x, anchor.y,
+		self.x, self.y)
+end
+
+-- get unit vectors
+function vec2:unit()
+	local len = sqrt(
+		self.x * self.x +
+		self.y * self.y)
+	return vec2(self.x / len,
+		self.y / len)
+end
+
+-- round to integer
+function vec2:round()
+	return vec2(flr(self.x + 0.5), flr(self.y + 0.5))
+end
+
+function heading(angle)
+	return vec2(cos(angle), sin(angle))
+end
+
+-- random point on unit circle
+function randir()
+	local p
+	repeat
+	p = vec2(beta(3,3),
+		beta(3,3)):unit()
+	until(p.x > 0 or p.y > 0)
+	return p
+end
+
 -->8
 --=============
 -- the player
