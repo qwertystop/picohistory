@@ -275,14 +275,21 @@ function wumpus:is_near(i)
 end
 
 function wumpus_animator()
-	-- todo runs when player enters wumpus room
+	-- runs when player enters wumpus room
+	local pos = vec2(60,60)
+	repeat
+		-- move 1px/frame
+		pos += (pos - player.pos):unit()
+		spr(84, pos.x, pos.y, 2, 2)
+		yield()
+	until pos - player.pos < 4
+	-- todo wumpus teeth animation
 end
 -->8
 --=============
 -- bats and pits
 --=============
-function bat_animator(ploc)
-	yield() -- to get ploc
+function bat_animator()
 	-- runs when player enters bat room
 	local frame = 0
 	local pos = vec2(60,60)
