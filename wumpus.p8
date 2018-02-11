@@ -391,12 +391,14 @@ end
 --=============
 -- the game hooks
 --=============
+local extra_draws -- table of temp draw coroutines
 function _init()
 	-- set up the maze
 	world = world_init()
 	local p, w = populate(world)
 	player:init(p)
 	wumpus:init(w)
+	extra_draws = {}
 end
 
 function _update()
@@ -406,9 +408,15 @@ end
 
 function _draw()
 	-- todo
+	cls()
 	local room_index = player.i
 	world[room_index]:draw()
 	player:draw()
+	local next_draws
+	for f in extra_draws do
+		if coresume(f) then add(next_draws, f) end
+	end
+	extra_draws = next_draws
 end
 __gfx__
 0000000022222222222040222222210422222222001110000000011000010000100001100000000000000000000000009999999923299999999999440000011e
