@@ -401,10 +401,14 @@ end
 
 function _update()
 	-- todo
+	player.update()
 end
 
 function _draw()
 	-- todo
+	local room_index = player.i
+	world[room_index]:draw()
+	player:draw()
 end
 __gfx__
 0000000022222222222040222222210422222222001110000000011000010000100001100000000000000000000000009999999923299999999999440000011e
