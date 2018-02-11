@@ -42,7 +42,20 @@ end
 -- the player
 --=============
 local player = {} -- singleton
+
+function player:init(i)
+	self.x = 60
+	self.y = 60
+	self.i = i
+	self.dir = 3 -- south (enumerated n,e,s,w)
+	local c = cocreate(self.loop)
+	-- first call is just to assign self inside the coroutine
+	coresume(c, self)
+	self.update = function() coresume(c) end
+end
+
 function player:loop()
+	yield() -- this just gets self assigned
 	while true do
 		-- todo await input
 		-- todo loop movement or firing until resolved
@@ -143,29 +156,33 @@ function room:draw()
 	-- so they get handled separately
 end
 
-local world = {
-	room(1,0,6,13,10),
-	room(2,7,3,0,8),
-	room(3,2,11,0,9),
-	room(4,10,5,8,0),
-	room(5,15,0,7,4),
-	room(6,8,9,0,1),
-	room(7,0,20,2,5),
-	room(8,0,2,6,4),
-	room(9,0,3,19,6),
-	room(10,4,1,0,17),
-	room(11,0,20,16,3),
-	room(12,13,18,17,0),
-	room(13,1,19,0,12),
-	room(14,0,15,18,20),
-	room(15,5,17,0,14),
-	room(16,19,11,18,0)
-	room(17,0,10,12,15),
-	room(18,16,0,14,12),
-	room(19,9,0,16,13),
-	room(20,7,14,0,11)
-}
- 
+local world
+
+local function world_init()
+	return {
+		room(1,0,6,13,10),
+		room(2,7,3,0,8),
+		room(3,2,11,0,9),
+		room(4,10,5,8,0),
+		room(5,15,0,7,4),
+		room(6,8,9,0,1),
+		room(7,0,20,2,5),
+		room(8,0,2,6,4),
+		room(9,0,3,19,6),
+		room(10,4,1,0,17),
+		room(11,0,20,16,3),
+		room(12,13,18,17,0),
+		room(13,1,19,0,12),
+		room(14,0,15,18,20),
+		room(15,5,17,0,14),
+		room(16,19,11,18,0)
+		room(17,0,10,12,15),
+		room(18,16,0,14,12),
+		room(19,9,0,16,13),
+		room(20,7,14,0,11)
+	}
+end
+
 local function populate(rooms)
 	-- place two bats and two pits, no overlap
 	local avail = {}
@@ -175,7 +192,7 @@ local function populate(rooms)
 	for key in {'bat', 'pit'} do
 		for i=1,2 do
 			local n = pick(avail)
-			world[n][key] = true
+			rooms[n][key] = true
 			del(avail, n)
 		end
 	end
@@ -189,7 +206,11 @@ end
 -- the game hooks
 --=============
 function _init()
-	-- todo
+	-- set up the maze
+	world = world_init()
+	local p, w = populate(world)
+	player:init(p)
+	wumpus:init(w)
 end
 
 function _update()
