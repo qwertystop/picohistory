@@ -75,23 +75,31 @@ function wumpus:move_adj()
 	-- move to an adjacent room
 	local new_room = pick(world[self.i].conn)
 	self.i = new_room.i
-	self:nearness()
 end
 
-function wumpus:nearness()
-	-- sets rooms near-wumpus-ness
-	local room = world[self.i]
-	room.near_wump = true
-	for one_degree in room.conn do
-		if one_degree ~= 0 then
-			world[one_degree].near_wump = true
-		end
-		for two_degrees in world[one_degree].conn do
-			if two_degrees ~= 0 then
-				world[two_degrees].near_wump = true
+function wumpus:is_near(i)
+	-- tells whether the room is near the wumpus
+	-- check this room
+	if self.i == i then
+		return true
+	else
+		local room = world[self.i]
+		-- check rooms one away
+		for j in room.conn do
+			if j == i then
+				return true
+			elseif j ~= 0 then 
+				local one_degree = world[j]
+				-- check rooms two away
+				for k in one_degree.conn do
+					if k == i then
+						return true
+					end
+				end
 			end
 		end
 	end
+	return false
 end
 
 function wumpus_animator()
@@ -120,14 +128,13 @@ function room:init(i,n,e,s,w)
 	self.moss = pick(palette)
 	self.pit = false
 	self.bat = false
-	self.near_wump = false
 end
 
 function room:status()
 	-- determine what warnings to play
 	local b = self.bat or any(self.conn, function(me) return me.bat end)
 	local p = self.pit or any(self.conn, function(me) return me.pit end)
-	return b, p, self.near_wump
+	return b, p, wumpus:is_near(self.i)
 end
 
 function room:draw()
