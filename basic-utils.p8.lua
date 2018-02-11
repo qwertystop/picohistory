@@ -61,6 +61,14 @@ end
 --=============
 -- utils
 --=============
+function btnpoll(pnum)
+	-- poll all buttons for a player
+	for i=0,5 do
+		if btn(i, pnum) then return i end
+	end
+	return false
+end
+
 function sort(args, keyfunc)
 	-- insertion, good enough
 	local keys = {}

@@ -66,6 +66,15 @@ end
 --=============
 -- utils
 --=============
+-- misc
+function btnpoll()
+	-- poll all buttons for p0
+	for i=0,5 do
+		if btn(i,0) then return i end
+	end
+	return false
+end
+
 -- 15 symbols for pick, plus three per call
 -- 8 per call to inline
 -- cheaper if used thrice
@@ -207,9 +216,7 @@ function player:loop()
 		b = false
 		repeat -- await input
 			-- poll buttons
-			for i=0,5 do
-				if btn(0, i) then b = i end
-			end
+			b = btnpoll()
 			yield()
 		until b
 		-- now react to input
