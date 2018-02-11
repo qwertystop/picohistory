@@ -280,7 +280,7 @@ function wumpus:is_near(i)
 		for j in room.conn do
 			if j == i then
 				return true
-			elseif j ~= 0 then 
+			elseif j ~= 0 then
 				local one_degree = world[j]
 				-- check rooms two away from wump
 				for k in one_degree.conn do
@@ -437,6 +437,7 @@ function _draw()
 		if coresume(f) then add(next_draws, f) end
 	end
 	extra_draws = next_draws
+	-- todo shading/lighting
 end
 __gfx__
 0000000022222222222040222222210422222222001110000000011000010000100001100000000000000000000000009999999923299999999999440000011e
