@@ -278,8 +278,19 @@ end
 --=============
 -- bats and pits
 --=============
-function bat_animator()
-	-- todo runs when player enters bat room
+function bat_animator(ploc)
+	yield() -- to get ploc
+	-- runs when player enters bat room
+	local frame = 0
+	local pos = vec2(60,60)
+	repeat
+		frame = (frame + 1) % 10
+		local s = frame > 4 and 68 or 69
+		-- move 1px/frame
+		pos += (pos - player.pos):unit()
+		spr(s, pos.x, pos.y)
+		yield()
+	until pos - player.pos < 4
 end
 
 function pit_animator()
