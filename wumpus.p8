@@ -221,37 +221,43 @@ function player:loop()
 		-- now react to input
 		-- 0-3: move. 4: shoot. 5: repeat audio cues.
 		if b <= 3 then
-			-- todo move to next room
-			-- todo react to contents
+			self:movement(b)
 		elseif b == 4 then
-			-- todo print cue for shooting directions
-			-- should reference path,
-			-- so inputs are included as feedback
-			b = false
-			local path = {}
-			for i=1,5 do
-				-- take up to five inputs
-				repeat
-					b = btnpoll()
-					yield()
-				until b
-				if b <= 3 then
-					add(path, b)
-				else
-					-- nondirectional input means end
-					break
-				end
-			end
-			-- todo shoot
-			-- todo draw arrow until it goes offscreen
-			-- todo then wait
-			-- todo then play sound for hit or miss
+			self:arrow()
 		else -- b == 5
 			-- replay audio cues
 			play_cues()
 			yield()
 		end
 	end
+end
+
+local function player:movement(dir)
+	-- todo move to next room
+	-- todo react to contents
+end
+
+local function player:arrow()
+	-- todo print cue for shooting directions
+	-- and feedback (from path)
+	local b
+	local path = {}
+	for i=1,5 do
+		-- take up to five inputs
+		repeat
+			b = btnpoll()
+			yield()
+		until b
+		if b <= 3 then
+			add(path, b)
+		else -- nondirectional input, end path
+			break
+		end
+	end
+	-- todo shoot
+	-- todo draw arrow until it goes offscreen
+	-- todo then wait
+	-- todo then play sound for hit or miss
 end
 
 function player:draw()
