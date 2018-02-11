@@ -225,7 +225,28 @@ function player:loop()
 			-- todo move to next room
 			-- todo react to contents
 		elseif b == 4 then
-			-- todo take shooting directions, shoot
+			-- todo print cue for shooting directions
+			-- should reference path,
+			-- so inputs are included as feedback
+			b = false
+			local path = {}
+			for i=1,5 do
+				-- take up to five inputs
+				repeat
+					b = btnpoll()
+					yield()
+				until b
+				if b <= 3 then
+					add(path, b)
+				else
+					-- nondirectional input means end
+					break
+				end
+			end
+			-- todo shoot
+			-- todo draw arrow until it goes offscreen
+			-- todo then wait
+			-- todo then play sound for hit or miss
 		else -- b == 5
 			-- replay audio cues
 			play_cues()
@@ -236,7 +257,7 @@ end
 
 function player:draw()
 	-- todo
-	-- draws player and/or arrow
+	-- draws player
 end
 -->8
 --=============
