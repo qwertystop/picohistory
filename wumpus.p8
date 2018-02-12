@@ -91,6 +91,15 @@ function any(list, condition)
 	return false
 end
 
+local function index_of(list, item)
+	for i=1,#list do
+		if item == list[i] then
+			return i
+		end
+	end
+	return false
+end
+
 -- classes
 function class(base, proto)
 	proto = proto or {}

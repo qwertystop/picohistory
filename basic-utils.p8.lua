@@ -114,7 +114,16 @@ end
 local function pick(list)
 	return flr(rnd(#list))+1
 end
-	
+
+local function index_of(list, item)
+	for i=1,#list do
+		if item == list[i] then
+			return i
+		end
+	end
+	return false
+end
+
 -- beta distribution, for small
 -- positive integer a and b.
 -- note that beta(3, 3) is
@@ -180,6 +189,7 @@ end
 
 function vec2:__lt(other)
 	return self:mag() < other:mag()
+end
 
 -- paired multiplication
 function vec2:elemx(other)
