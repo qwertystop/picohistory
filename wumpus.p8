@@ -142,6 +142,7 @@ end
 
 function vec2:__lt(other)
 	return self:mag() < other
+end
 
 -- magnitude
 function vec2:mag()
