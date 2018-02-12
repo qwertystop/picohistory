@@ -153,6 +153,13 @@ function vec2:__lt(other)
 	return self:mag() < other
 end
 
+-- paired multiplication
+function vec2:elemx(other)
+	return vec2(
+		self.x * other.x,
+		self.y * other.y)
+end
+
 -- magnitude
 function vec2:mag()
 	return sqrt(self.x * self.x +
@@ -213,9 +220,89 @@ function player:loop()
 	end
 end
 
+-- direction to walk for each dir
+local dir_vectors = {
+	vec2(-1, 0), vec2(1, 0),
+	vec2(0, -1), vec2(0, 1)
+}
 local function player:movement(dir)
-	-- todo move to next room
-	-- todo react to contents
+	local old_index = self.i
+	local new_index = world[old_index].conn[dir]
+	if next_index == 0 then
+		-- todo play error tone, do not move
+	else
+		-- move to next room
+		local vector = dir_vectors[dir]
+		local axis = dir < 3 and 'x' or 'y'
+		-- first move directly towards the door
+		repeat
+			self.pos += vector
+			yield()
+		until self.pos[axis] < 0 or self.pos[axis] > 127
+		-- change room, and walk into it
+		self:enter_room(new_index)
+	end
+end
+
+local function player:enter_room(new_index)
+	::roomentry::
+	self.i = new_index
+	local new_room = world[new_index]
+	-- new vector is the reverse of the
+	-- vector to the old room from this room
+	vector = dir_vectors[index_of(new_room.conn, old_index)] * -1
+	-- set position based on door to previous
+	local c = vec2(vector.x == 0 and 0 or 4, vector.y == 0 and 0 or 4)
+	self.pos = vector:elemx(vec2(52, 36)) + c
+	-- react to contents
+	local bat, pit, wump = new_room:status()
+	if pit then
+		wait_for(pit_animator)
+		wait_for(gameover, "You fell into a pit.")
+		extcmd('reset')
+	else
+		-- if wump or bat, walk until they run into you
+		-- otherwise, walk to center
+		local done
+		if wump or bat then
+			local a = wump and cocreate(wumpus_animator) or cocreate(bat_animator)
+			add(extra_draws, a)
+			done = function() return not costatus(a) end
+		else
+			done = function() return self.pos.x == 64 and self.pos.y == 64 end
+		end
+		repeat
+			self.pos += vector
+			yield()
+		until done()
+		-- now either react to contents, or be done
+		if wump then
+			-- play teeth, then reset
+			wait_for(wumpus_teeth)
+			wait_for(gameover, "You were eaten by a wumpus.")
+			extcmd('reset')
+		elseif bat then
+			-- find a new room
+			local where
+			repeat
+				where = flr(rnd(20))+1
+			until where != new_index
+			wait_for(bat_pause)
+			-- enter the new room
+			new_index = where
+			-- goto saves on stack here,
+			-- in case of jump to bat room
+			goto roomentry
+		end
+		-- nothing in the room, stop
+	end
+end
+
+local function wait_for(co, arg)
+	local c = cocreate(co)
+	if arg then coresume(co,arg) end
+	add(extra_draws, c)
+	repeat yield() until not costatus(c)
 end
 
 local function player:arrow()
@@ -313,6 +400,9 @@ function bat_animator()
 		spr(s, pos.x, pos.y)
 		yield()
 	until pos - player.pos < 4
+end
+
+function bat_pause()
 	-- half-a-second of black screen
 	for i=1,15 do
 		cls()
@@ -326,6 +416,7 @@ function pit_animator()
 end
 
 function gameover(reason)
+	yield() -- to recieve reason
 	-- todo text screen when eaten or fallen
 end
 --=============
