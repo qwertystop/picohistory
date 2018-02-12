@@ -179,7 +179,7 @@ end
 local player = {} -- singleton
 
 function player:init(i)
-	self.pos = vec2(60,60)
+	self.pos = vec2(64,64)
 	self.i = i
 	self.dir = 4 -- south (enumerated w,e,n,s)
 	self.dirsprites = {96,98,66,64}
@@ -202,7 +202,7 @@ function player:loop()
 		-- now react to input
 		-- 0-3: move. 4: shoot. 5: repeat audio cues.
 		if b <= 3 then
-			self:movement(b)
+			self:movement(b+1) -- one-indexed
 		elseif b == 4 then
 			self:arrow()
 		else -- b == 5
@@ -285,7 +285,7 @@ end
 
 function wumpus_animator()
 	-- runs when player enters wumpus room
-	local pos = vec2(60,60)
+	local pos = vec2(64, 64)
 	repeat
 		-- move 1px/frame
 		pos += (pos - player.pos):unit()
@@ -304,7 +304,7 @@ end
 function bat_animator()
 	-- runs when player enters bat room
 	local frame = 0
-	local pos = vec2(60,60)
+	local pos = vec2(64,64)
 	repeat
 		frame = (frame + 1) % 10
 		local s = frame > 4 and 68 or 69
@@ -336,7 +336,7 @@ local palette = {8,11,12,14}
 local room = class()
 function room:init(i,n,e,s,w)
 	self.i = i
-	self.conn = {n,e,s,w}
+	self.conn = {w,e,n,s} -- in button order
 	self.moss = pick(palette)
 	self.pit = false
 	self.bat = false
@@ -355,10 +355,10 @@ function room:draw()
 	map(0,0,0,0,16,15)
 	-- then place the doors
 	local dir_args = {
-		{1,16,4,56,8,3,3},
+		{3,16,4,56,8,3,3},
 		{2,17,1,120,56,1,3},
-		{3,16,0,56,112,3,1},
-		{4,16,3,0,56,1,3}
+		{4,16,0,56,112,3,1},
+		{1,16,3,0,56,1,3}
 	}
 	palt(0, false)
 	for i,mx,my,px,py,w,h in dir_args do
