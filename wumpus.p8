@@ -283,6 +283,9 @@ function wumpus_animator()
 		spr(84, pos.x, pos.y, 2, 2)
 		yield()
 	until pos - player.pos < 4
+end
+
+function wumpus_teeth()
 	-- todo wumpus teeth animation
 end
 -->8
@@ -311,6 +314,10 @@ end
 
 function pit_animator()
 	-- todo runs when player enters pit room
+end
+
+function gameover(reason)
+	-- todo text screen when eaten or fallen
 end
 --=============
 -- the world
