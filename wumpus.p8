@@ -186,7 +186,7 @@ end
 local player = {} -- singleton
 
 function player:init(i)
-	self.pos = vec2(64,64)
+	self.pos = vec2(60,56)
 	self.i = i
 	self.dir = 4 -- south (enumerated w,e,n,s)
 	self.dirsprites = {96,98,66,64}
@@ -228,17 +228,27 @@ local dir_vectors = {
 function player:movement(dir)
 	local old_index = self.i
 	local new_index = world[old_index].conn[dir]
-	if next_index == 0 then
-		-- todo play error tone, do not move
+	printh(repr {from=old_index, to=new_index})
+	printh("old: ".. repr(world[old_index]))
+	printh("new: ".. repr(world[new_index]))
+	-- move as far as wall
+	local vector = dir_vectors[dir]
+	local axis = dir < 3 and 'x' or 'y'
+	local bound = room.bounds[dir][axis]
+	repeat
+		self.pos += vector
+		yield()
+	until self.pos[axis] == bound
+	if new_index == 0 then
+		-- wall there
+		-- todo play error tone
+		bound = axis == 'x' and 56 or 60
+		repeat
+			self.pos -= vector
+			yield()
+		until self.pos[axis] == bound
 	else
 		-- move to next room
-		local vector = dir_vectors[dir]
-		local axis = dir < 3 and 'x' or 'y'
-		-- first move directly towards the door
-		repeat
-			self.pos += vector
-			yield()
-		until self.pos[axis] < 0 or self.pos[axis] > 127
 		-- change room, and walk into it
 		self:enter_room(new_index)
 	end
@@ -448,12 +458,14 @@ end
 --=============
 -- the world
 --=============
-local palette = {8,11,12,14}
-local room = class()
+room = class{
+	bounds={vec2(8,56),vec2(104,56),vec2(60,16),vec2(60, 96)},
+	palette={8,11,12,14}
+}
 function room:init(i,n,e,s,w)
 	self.i = i
 	self.conn = {w,e,n,s} -- in button order
-	self.moss = pick(palette)
+	self.moss = pick(room.palette)
 	self.pit = false
 	self.bat = false
 end
