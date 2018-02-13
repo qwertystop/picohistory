@@ -7,7 +7,7 @@ __lua__
 -- debugging
 --===========
 reprdepth = 0
-function _tablerepr(t)
+local function _tablerepr(t)
 	if reprdepth > 1 then
 		return "<table>"
 	end
@@ -32,7 +32,7 @@ function _tablerepr(t)
 	return ret .. "}"
 end
 
-function repr(t)
+local function repr(t)
 	if t == true then
 		return "<true>"
 	elseif t == false then
@@ -54,7 +54,7 @@ function repr(t)
 	end
 end
 
-function spew(arg)
+local function spew(arg)
 	local out = ""
 	for s in all(arg) do
 		out = out .. repr(s) .. " "
@@ -67,7 +67,7 @@ end
 -- utils
 --=============
 -- misc
-function btnpoll()
+local function btnpoll()
 	-- poll all buttons for p0
 	for i=0,5 do
 		if btn(i,0) then return i end
@@ -82,7 +82,7 @@ local function pick(list)
 	return flr(rnd(#list))+1
 end
 
-function any(list, condition)
+local function any(list, condition)
 	for i=1,#list do
 		if condition(list[i]) then
 			return true
@@ -101,7 +101,7 @@ local function index_of(list, item)
 end
 
 -- classes
-function class(base, proto)
+local function class(base, proto)
 	proto = proto or {}
 	proto.__index = proto
 	local meta = {__index = base}
@@ -225,7 +225,7 @@ local dir_vectors = {
 	vec2(-1, 0), vec2(1, 0),
 	vec2(0, -1), vec2(0, 1)
 }
-local function player:movement(dir)
+function player:movement(dir)
 	local old_index = self.i
 	local new_index = world[old_index].conn[dir]
 	if next_index == 0 then
@@ -244,7 +244,7 @@ local function player:movement(dir)
 	end
 end
 
-local function player:enter_room(new_index)
+function player:enter_room(new_index)
 	::roomentry::
 	self.i = new_index
 	local new_room = world[new_index]
@@ -303,7 +303,7 @@ local function wait_for(co, arg)
 	repeat yield() until not costatus(c)
 end
 
-local function player:arrow()
+function player:arrow()
 	-- todo print cue for shooting directions
 	-- and feedback (from path)
 	local b
@@ -395,7 +395,7 @@ function wumpus:is_near(i)
 	return false
 end
 
-function wumpus_animator()
+local function wumpus_animator()
 	-- runs when player enters wumpus room
 	local pos = vec2(64, 64)
 	repeat
@@ -406,14 +406,14 @@ function wumpus_animator()
 	until pos - player.pos < 4
 end
 
-function wumpus_teeth()
+local function wumpus_teeth()
 	-- todo wumpus teeth animation
 end
 -->8
 --=============
 -- bats and pits
 --=============
-function bat_animator()
+local function bat_animator()
 	-- runs when player enters bat room
 	local frame = 0
 	local pos = vec2(64,64)
@@ -427,7 +427,7 @@ function bat_animator()
 	until pos - player.pos < 4
 end
 
-function bat_pause()
+local function bat_pause()
 	-- half-a-second of black screen
 	for i=1,15 do
 		cls()
@@ -436,11 +436,11 @@ function bat_pause()
 	-- then let the player handle the new room entry
 end
 
-function pit_animator()
+local function pit_animator()
 	-- todo runs when player enters pit room
 end
 
-function gameover(reason)
+local function gameover(reason)
 	yield() -- to recieve reason
 	-- todo text-only screen
 	extcmd('reset')
@@ -551,7 +551,7 @@ end
 -- the game hooks
 --=============
 local extra_draws -- table of temp draw coroutines
-function _init()
+local function _init()
 	-- set up the maze
 	world = world_init()
 	local p, w = populate(world)
@@ -560,11 +560,11 @@ function _init()
 	extra_draws = {}
 end
 
-function _update()
+local function _update()
 	coresume(player.update)
 end
 
-function _draw()
+local function _draw()
 	cls()
 	local room_index = player.i
 	world[room_index]:draw()
