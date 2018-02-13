@@ -478,7 +478,7 @@ function room:draw()
 		{1,16,3,0,56,1,3}
 	}
 	palt(0, false)
-	for i,mx,my,px,py,w,h in dir_args do
+	for i,mx,my,px,py,w,h in all(dir_args) do
 		if self.conn[i] ~= 0 then
 			map(mx,my,px,py,w,h)
 		end
@@ -513,7 +513,7 @@ local function world_init()
 		room(13,1,19,0,12),
 		room(14,0,15,18,20),
 		room(15,5,17,0,14),
-		room(16,19,11,18,0)
+		room(16,19,11,18,0),
 		room(17,0,10,12,15),
 		room(18,16,0,14,12),
 		room(19,9,0,16,13),
@@ -527,7 +527,7 @@ local function populate(rooms)
 	for i=1,20 do
 		add(avail,i)
 	end
-	for key in {'bat', 'pit'} do
+	for key in all({'bat', 'pit'}) do
 		for i=1,2 do
 			local n = pick(avail)
 			rooms[n][key] = true
@@ -570,7 +570,7 @@ local function _draw()
 	world[room_index]:draw()
 	player:draw()
 	local next_draws
-	for f in extra_draws do
+	for f in all(extra_draws) do
 		if coresume(f) then add(next_draws, f) end
 	end
 	extra_draws = next_draws
