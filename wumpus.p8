@@ -241,7 +241,7 @@ function player:movement(dir)
 		self.dir = dir_reverse(dir)
 		-- wall there
 		-- todo play error tone
-		bound = axis == 'x' and 56 or 60
+		bound = axis == 'x' and 60 or 56
 		repeat
 			self.pos -= vector
 			yield()
@@ -568,7 +568,7 @@ end
 --=============
 -- the game hooks
 --=============
-local extra_draws -- table of temp draw coroutines
+extra_draws = nil -- table of temp draw coroutines
 local function _init()
 	-- set up the maze
 	world = world_init()
@@ -587,7 +587,7 @@ local function _draw()
 	local room_index = player.i
 	world[room_index]:draw()
 	player:draw()
-	local next_draws
+	local next_draws = {}
 	for f in all(extra_draws) do
 		if coresume(f) then add(next_draws, f) end
 	end
