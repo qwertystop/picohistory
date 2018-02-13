@@ -259,7 +259,6 @@ local function player:enter_room(new_index)
 	if pit then
 		wait_for(pit_animator)
 		wait_for(gameover, "You fell into a pit.")
-		extcmd('reset')
 	else
 		-- if wump or bat, walk until they run into you
 		-- otherwise, walk to center
@@ -280,7 +279,6 @@ local function player:enter_room(new_index)
 			-- play teeth, then reset
 			wait_for(wumpus_teeth)
 			wait_for(gameover, "You were eaten by a wumpus.")
-			extcmd('reset')
 		elseif bat then
 			-- find a new room
 			local where
@@ -417,7 +415,8 @@ end
 
 function gameover(reason)
 	yield() -- to recieve reason
-	-- todo text screen when eaten or fallen
+	-- todo text-only screen
+	extcmd('reset')
 end
 --=============
 -- the world
