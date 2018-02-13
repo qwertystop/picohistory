@@ -250,20 +250,22 @@ function player:movement(dir)
 	else
 		-- move to next room
 		-- change room, and walk into it
-		self:enter_room(new_index)
+		self:enter_room(old_index, new_index)
 	end
 end
 
-function player:enter_room(new_index)
+function player:enter_room(old_index, new_index)
 	::roomentry::
 	self.i = new_index
 	local new_room = world[new_index]
+	local entry_dir = index_of(new_room.conn, old_index)
+	local axis = entry_dir < 3 and 'x' or 'y'
+	spew {new_room, entry_dir, axis}
 	-- new vector is the reverse of the
 	-- vector to the old room from this room
-	vector = dir_vectors[index_of(new_room.conn, old_index)] * -1
+	local vector = dir_vectors[entry_dir] * -1
 	-- set position based on door to previous
-	local c = vec2(vector.x == 0 and 0 or 4, vector.y == 0 and 0 or 4)
-	self.pos = vector:elemx(vec2(52, 36)) + c
+	self.pos = room.bounds[entry_dir]
 	-- react to contents
 	local bat, pit, wump = new_room:status()
 	if pit then
