@@ -264,7 +264,9 @@ function player:enter_room(old_index, new_index)
 	-- set position based on door to previous
 	self.pos = room.bounds[entry_dir]
 	-- react to contents
-	local bat, pit, wump = new_room:status()
+	local bat = new_room.bat
+	local pit = new_room.pit
+	local wump = wumpus.i == new_index
 	if pit then
 		wait_for(pit_animator)
 		wait_for(gameover, "You fell into a pit.")
@@ -277,7 +279,7 @@ function player:enter_room(old_index, new_index)
 			add(extra_draws, a)
 			done = function() return not costatus(a) end
 		else
-			done = function() return self.pos.x == 64 and self.pos.y == 64 end
+			done = function() return self.pos.x == 60 and self.pos.y == 56 end
 		end
 		repeat
 			self.pos += vector
@@ -372,7 +374,7 @@ end
 --=============
 -- the wumpus
 --=============
-local wumpus = {} -- singleton
+wumpus = {} -- singleton
 function wumpus:move_adj()
 	-- move to an adjacent room
 	local new_room = pick(world[self.i].conn)
@@ -471,8 +473,8 @@ end
 
 function room:status()
 	-- determine what warnings to play
-	local b = self.bat or any(self.conn, function(me) return me.bat end)
-	local p = self.pit or any(self.conn, function(me) return me.pit end)
+	local b = self.bat or any(self.conn, function(me) return me ~= 0 and world[me].bat end)
+	local p = self.pit or any(self.conn, function(me) return me ~= 0 and world[me].pit end)
 	return b, p, wumpus:is_near(self.i)
 end
 
