@@ -258,13 +258,11 @@ function dir_reverse(dir)
 end
 
 function player:enter_room(old_index, new_index)
-	::roomentry::
 	self.i = new_index
 	local new_room = world[new_index]
 	local entry_dir = index_of(new_room.conn, old_index)
 	self.dir = dir_reverse(entry_dir)
 	local axis = entry_dir < 3 and 'x' or 'y'
-	spew {new_room, entry_dir, axis}
 	-- new vector is the reverse of the
 	-- vector to the old room from this room
 	local vector = dir_vectors[entry_dir] * -1
@@ -275,8 +273,8 @@ function player:enter_room(old_index, new_index)
 	local pit = new_room.pit
 	local wump = wumpus.i == new_index
 	if pit then
-		wait_for(pit_animator)
-		wait_for(gameover, "You fell into a pit.")
+		wait_for_anim(pit_animator)
+		gameover("You fell into a pit.")
 	else
 		-- if wump or bat, walk until they run into you
 		-- otherwise, walk to center
@@ -284,7 +282,7 @@ function player:enter_room(old_index, new_index)
 		if wump or bat then
 			local a = wump and cocreate(wumpus_animator) or cocreate(bat_animator)
 			add(extra_draws, a)
-			done = function() return not costatus(a) end
+			done = function() return costatus(a) == 'dead' end
 		else
 			done = function() return self.pos.x == 60 and self.pos.y == 56 end
 		end
@@ -295,30 +293,27 @@ function player:enter_room(old_index, new_index)
 		-- now either react to contents, or be done
 		if wump then
 			-- play teeth, then reset
-			wait_for(wumpus_teeth)
-			wait_for(gameover, "You were eaten by a wumpus.")
+			wait_for_anim(wumpus_teeth)
+			gameover("You were eaten by a wumpus.")
 		elseif bat then
 			-- find a new room
 			local where
 			repeat
 				where = flr(rnd(20))+1
 			until where != new_index
-			wait_for(bat_pause)
+			wait_for_anim(bat_pause)
 			-- enter the new room
-			new_index = where
-			-- goto saves on stack here,
-			-- in case of jump to bat room
-			goto roomentry
+			self:enter_room(0, where)
 		end
 		-- nothing in the room, stop
 	end
 end
 
-local function wait_for(co, arg)
+function wait_for_anim(co, arg)
 	local c = cocreate(co)
 	if arg then coresume(co,arg) end
 	add(extra_draws, c)
-	repeat yield() until not costatus(c)
+	repeat yield() until costatus(c) == 'dead'
 end
 
 function player:arrow()
@@ -357,12 +352,12 @@ function player:arrow()
 			-- then wait 1s
 			for i=1,30 do yield() end
 		end
-		wait_for(firing)
+		wait_for_anim(firing)
 		-- check for wumpus
 		if any(path, function(i) return i == wumpus.i end) then
 			-- a hit
 			-- todo play sound for hit
-			wait_for(gameover, "You shot the wumpus!")
+			gameover("You shot the wumpus!")
 		else
 			-- a miss
 			-- todo play sound for miss
@@ -418,7 +413,7 @@ function wumpus_animator()
 	local pos = vec2(64, 64)
 	repeat
 		-- move 1px/frame
-		pos += (pos - player.pos):unit()
+		pos -= (pos - player.pos):unit()
 		spr(84, pos.x, pos.y, 2, 2)
 		yield()
 	until pos - player.pos < 4
@@ -439,18 +434,19 @@ function bat_animator()
 		frame = (frame + 1) % 10
 		local s = frame > 4 and 68 or 69
 		-- move 1px/frame
-		pos += (pos - player.pos):unit()
+		pos -= (pos - player.pos):unit()
 		spr(s, pos.x, pos.y)
 		yield()
 	until pos - player.pos < 4
 end
 
-local function bat_pause()
+function bat_pause()
 	-- half-a-second of black screen
+	blank = true
 	for i=1,15 do
-		cls()
 		yield()
 	end
+	blank = false
 	-- then let the player handle the new room entry
 end
 
@@ -458,9 +454,9 @@ function pit_animator()
 	-- todo runs when player enters pit room
 end
 
-local function gameover(reason)
-	yield() -- to recieve reason
-	-- todo text-only screen
+function gameover(reason)
+	blank = true
+	-- todo set up text overlay
 	extcmd('reset')
 end
 --=============
@@ -569,6 +565,7 @@ end
 -- the game hooks
 --=============
 extra_draws = nil -- table of temp draw coroutines
+text_overlay = nil
 local function _init()
 	-- set up the maze
 	world = world_init()
@@ -576,6 +573,7 @@ local function _init()
 	player:init(p)
 	wumpus.i = w
 	extra_draws = {}
+	text_overlay = {}
 end
 
 local function _update()
@@ -584,15 +582,24 @@ end
 
 local function _draw()
 	cls()
-	local room_index = player.i
-	world[room_index]:draw()
-	player:draw()
+	-- draw only if not blank
+	if not blank then
+		world[player.i]:draw()
+		player:draw()
+	end
+	-- advance animations either way
 	local next_draws = {}
 	for f in all(extra_draws) do
 		if coresume(f) then add(next_draws, f) end
 	end
 	extra_draws = next_draws
-	-- todo shading/lighting
+	if not blank then
+		-- todo shading/lighting
+	end	
+	-- text overlays come after lighting
+	if #text_overlay > 0 then
+		-- todo
+	end
 end
 __gfx__
 000000002222222222204022222221042222222200111000000001100001000010000110000000000000000000000000999999992b299999999999440000011e
