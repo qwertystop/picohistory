@@ -183,7 +183,7 @@ end
 --=============
 -- the player
 --=============
-local player = {} -- singleton
+player = {} -- singleton
 
 function player:init(i)
 	self.pos = vec2(60,56)
@@ -413,7 +413,7 @@ function wumpus:is_near(i)
 	return false
 end
 
-local function wumpus_animator()
+function wumpus_animator()
 	-- runs when player enters wumpus room
 	local pos = vec2(64, 64)
 	repeat
@@ -424,14 +424,14 @@ local function wumpus_animator()
 	until pos - player.pos < 4
 end
 
-local function wumpus_teeth()
+function wumpus_teeth()
 	-- todo wumpus teeth animation
 end
 -->8
 --=============
 -- bats and pits
 --=============
-local function bat_animator()
+function bat_animator()
 	-- runs when player enters bat room
 	local frame = 0
 	local pos = vec2(64,64)
@@ -454,7 +454,7 @@ local function bat_pause()
 	-- then let the player handle the new room entry
 end
 
-local function pit_animator()
+function pit_animator()
 	-- todo runs when player enters pit room
 end
 
