@@ -228,9 +228,6 @@ local dir_vectors = {
 function player:movement(dir)
 	local old_index = self.i
 	local new_index = world[old_index].conn[dir]
-	printh(repr {from=old_index, to=new_index})
-	printh("old: ".. repr(world[old_index]))
-	printh("new: ".. repr(world[new_index]))
 	-- move as far as wall
 	local vector = dir_vectors[dir]
 	local axis = dir < 3 and 'x' or 'y'
