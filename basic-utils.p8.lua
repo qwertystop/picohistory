@@ -108,11 +108,11 @@ function any(list, condition)
 	return false
 end
 
--- 15 symbols for pick, plus three per call
+-- 17 symbols for pick, plus three per call
 -- 8 per call to inline
 -- cheaper if used thrice
 local function pick(list)
-	return flr(rnd(#list))+1
+	return list[flr(rnd(#list))+1]
 end
 
 local function index_of(list, item)
