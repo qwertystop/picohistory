@@ -7,7 +7,7 @@ __lua__
 -- debugging
 --===========
 reprdepth = 0
-local function _tablerepr(t)
+function _tablerepr(t)
 	if reprdepth > 1 then
 		return "<table>"
 	end
@@ -32,7 +32,7 @@ local function _tablerepr(t)
 	return ret .. "}"
 end
 
-local function repr(t)
+function repr(t)
 	if t == true then
 		return "<true>"
 	elseif t == false then
@@ -54,7 +54,7 @@ local function repr(t)
 	end
 end
 
-local function spew(arg)
+function spew(arg)
 	local out = ""
 	for s in all(arg) do
 		out = out .. repr(s) .. " "
@@ -494,8 +494,7 @@ function room:draw()
 	-- so they get handled separately
 end
 
-local world
-
+world = {}
 local function world_init()
 	return {
 		room(1,0,6,13,10),
