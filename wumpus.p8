@@ -226,6 +226,7 @@ local dir_vectors = {
 	vec2(0, -1), vec2(0, 1)
 }
 function player:movement(dir)
+	self.dir = dir
 	local old_index = self.i
 	local new_index = world[old_index].conn[dir]
 	-- move as far as wall
@@ -237,6 +238,7 @@ function player:movement(dir)
 		yield()
 	until self.pos[axis] == bound
 	if new_index == 0 then
+		self.dir = dir_reverse(dir)
 		-- wall there
 		-- todo play error tone
 		bound = axis == 'x' and 56 or 60
@@ -251,11 +253,16 @@ function player:movement(dir)
 	end
 end
 
+function dir_reverse(dir)
+	return dir + (dir % 2 == 1 and 1 or -1)
+end
+
 function player:enter_room(old_index, new_index)
 	::roomentry::
 	self.i = new_index
 	local new_room = world[new_index]
 	local entry_dir = index_of(new_room.conn, old_index)
+	self.dir = dir_reverse(entry_dir)
 	local axis = entry_dir < 3 and 'x' or 'y'
 	spew {new_room, entry_dir, axis}
 	-- new vector is the reverse of the
