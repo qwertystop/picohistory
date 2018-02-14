@@ -593,6 +593,7 @@ end
 
 local function _draw()
 	cls()
+	if costatus(player.update) == 'dead' then print("error") stop() end
 	-- draw only if not blank
 	if not blank then
 		world[player.i]:draw()
