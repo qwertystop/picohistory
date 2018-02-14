@@ -328,11 +328,12 @@ function player:arrow()
 	local path = get_path()
 	if #path > 0 then -- to make sure player didn't cancel w/o dir
 		local dir = path[1]
+		local vec = dir_vectors[dir]
 
 		local function firing()
 			for i=1,10 do yield() end -- short pause before firing
 			-- todo disable cue/feedback display
-			local pos = vec2(64, 64) + (initial_vec * 8)
+			local pos = vec2(64, 64) + (vec * 8)
 			-- determine horiz or vert sprite
 			local s = dir < 3 and 117 or 16
 			local hflip = dir == 1 or dir == 4
@@ -340,7 +341,7 @@ function player:arrow()
 			-- simpler than checking position
 			for i=1,64 do
 				spr(s, pos.x, pos.y, 1, 1, hflip, vflip)
-				pos = pos + ini
+				pos = pos + vec
 				yield()
 			end
 			-- then wait 1s
