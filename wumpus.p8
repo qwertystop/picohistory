@@ -462,7 +462,14 @@ function wumpus_animator(pos)
 end
 
 function wumpus_teeth()
-	-- todo wumpus teeth animation
+	local center = player.pos
+	for offset=32,0,-1 do
+		spr(70, center.x, center.y-offset, 4, 4)
+		spr(70, center.x+32, center.y-offset, 4, 4)
+		spr(70, center.x, center.y+offset, 4, 4, true, true)
+		spr(70, center.x+32, center.y+offset, 4, 4, true, true)
+		yield()
+	end
 end
 -->8
 --=============
