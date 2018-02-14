@@ -568,7 +568,7 @@ end
 --=============
 -- audio
 --=============
-local function play_cues()
+function play_cues()
 	local bat, pit, wump = world[player.i]:status()
 	-- todo actually play audio
 end
