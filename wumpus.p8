@@ -70,7 +70,7 @@ end
 local function btnpoll()
 	-- poll all buttons for p0
 	for i=0,5 do
-		if btn(i,0) then return i end
+		if btnp(i,0) then return i end
 	end
 	return false
 end
