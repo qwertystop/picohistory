@@ -280,7 +280,13 @@ function player:enter_room(old_index, new_index)
 		-- otherwise, walk to center
 		local done
 		if wump or bat then
-			local a = wump and cocreate(wumpus_animator) or cocreate(bat_animator)
+			local a
+			if wump then 
+				a = cocreate(wumpus_animator)
+				coresume(a, vec2(64, 64))
+			else
+				a = cocreate(bat_animator)
+			end
 			add(extra_draws, a)
 			done = function() return costatus(a) == 'dead' end
 		else
@@ -319,22 +325,10 @@ end
 function player:arrow()
 	-- todo print cue for shooting directions
 	-- and feedback (from path)
-	local path = {}
-	for i=1,5 do
-		local b
-		-- take up to five inputs
-		repeat
-			b = btnpoll()
-			yield()
-		until b
-		if b <= 3 then
-			add(path, b+1)
-		else -- nondirectional input, end path
-			break
-		end
-	end
+	local path = get_path()
 	if #path > 0 then -- to make sure player didn't cancel w/o dir
 		local dir = path[1]
+
 		local function firing()
 			for i=1,10 do yield() end -- short pause before firing
 			-- todo disable cue/feedback display
@@ -352,19 +346,55 @@ function player:arrow()
 			-- then wait 1s
 			for i=1,30 do yield() end
 		end
+
 		wait_for_anim(firing)
-		-- check for wumpus
-		if any(path, function(i) return i == wumpus.i end) then
-			-- a hit
-			-- todo play sound for hit
-			gameover("You shot the wumpus!")
-		else
-			-- a miss
-			-- todo play sound for miss
-			wumpus:move_adj()
-		end
+		arrow_check(self.i, path)
 	end
 end
+
+function get_path()
+	local path = {}
+	for i=1,5 do
+		local b
+		-- take up to five inputs
+		repeat
+			b = btnpoll()
+			yield()
+		until b
+		if b <= 3 then
+			add(path, b+1)
+		else -- nondirectional input, end path
+			break
+		end
+	end
+	return path
+end
+
+function arrow_check(room_index, path)
+	-- check for wumpus
+	local room = world[room_index]
+	for d in all(path) do
+		local i = room.conn[d]
+		if i == wumpus.i then
+			-- todo play sound for hit
+			gameover("You shot the wumpus!")
+		elseif i == 0 then
+			-- hit a wall
+			break
+		else
+			room = world[i]
+		end
+	end
+	-- gameover didn't happen, so it's a miss
+	-- todo play sound for miss
+	prev_wump = wumpus:move_adj()
+	if wumpus.i == self.i then
+		wait_for_anim(wumpus_animator, room.bounds[index_of(room.conn, prev_wump)])
+		wait_for_anim(wumpus_teeth)
+		gameover("You were eaten by a wumpus.")
+	end
+end
+
 
 function player:draw()
 	-- draws player
@@ -379,8 +409,10 @@ end
 wumpus = {} -- singleton
 function wumpus:move_adj()
 	-- move to an adjacent room
-	local new_room = pick(world[self.i].conn)
-	self.i = new_room.i
+	local new_i = pick(world[self.i].conn)
+	local old_i = self.i
+	self.i = new_i
+	return old_i
 end
 
 function wumpus:is_near(i)
@@ -408,9 +440,9 @@ function wumpus:is_near(i)
 	return false
 end
 
-function wumpus_animator()
+function wumpus_animator(pos)
+	yield() -- to get pos
 	-- runs when player enters wumpus room
-	local pos = vec2(64, 64)
 	repeat
 		-- move 1px/frame
 		pos -= (pos - player.pos):unit()
