@@ -319,9 +319,9 @@ end
 function player:arrow()
 	-- todo print cue for shooting directions
 	-- and feedback (from path)
-	local b
 	local path = {}
 	for i=1,5 do
+		local b
 		-- take up to five inputs
 		repeat
 			b = btnpoll()
