@@ -389,7 +389,7 @@ function arrow_check(room_index, path)
 	-- gameover didn't happen, so it's a miss
 	-- todo play sound for miss
 	prev_wump = wumpus:move_adj()
-	if wumpus.i == self.i then
+	if wumpus.i == room_index then
 		wait_for_anim(wumpus_animator, room.bounds[index_of(room.conn, prev_wump)])
 		wait_for_anim(wumpus_teeth)
 		gameover("You were eaten by a wumpus.")
