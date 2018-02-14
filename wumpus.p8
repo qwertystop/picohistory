@@ -492,9 +492,12 @@ end
 function bat_pause()
 	-- half-a-second of black screen
 	blank = true
+	local note = {"a bat carries you\nto another room!", 0, 0, 7}
+	add(text_overlay, note)
 	for i=1,15 do
 		yield()
 	end
+	for i=1,4 do note[i]=nil end
 	blank = false
 	-- then let the player handle the new room entry
 end
