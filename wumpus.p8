@@ -274,7 +274,7 @@ function player:enter_room(old_index, new_index)
 	local wump = wumpus.i == new_index
 	if pit then
 		wait_for_anim(pit_animator, vector)
-		gameover("You fell into a pit.")
+		gameover("you fell into a pit.")
 	else
 		-- if wump or bat, walk until they run into you
 		-- otherwise, walk to center
@@ -300,7 +300,7 @@ function player:enter_room(old_index, new_index)
 		if wump then
 			-- play teeth, then reset
 			wait_for_anim(wumpus_teeth)
-			gameover("You were eaten by a wumpus.")
+			gameover("you were eaten by a wumpus.")
 		elseif bat then
 			-- find a new room
 			local where
@@ -323,16 +323,23 @@ function wait_for_anim(co, arg)
 end
 
 function player:arrow()
-	-- todo print cue for shooting directions
+	-- print cue for shooting directions
+	local cue = {"which doors should\nthe arrow take? (up to 5)", 0, 0, 7}
+	local pathcue = {"", 0, 14, 7}
+	add(text_overlay, cue)
+	add(text_overlay, pathcue)
 	-- and feedback (from path)
-	local path = get_path()
+	local path = get_path(pathcue)
+	for i=1,10 do yield() end -- short pause before firing
+	for i=1,4 do
+		cue[i] = nil
+		pathcue[i] = nil
+	end
 	if #path > 0 then -- to make sure player didn't cancel w/o dir
 		local dir = path[1]
 		local vec = dir_vectors[dir]
 
 		local function firing()
-			for i=1,10 do yield() end -- short pause before firing
-			-- todo disable cue/feedback display
 			local pos = vec2(64, 64) + (vec * 8)
 			-- determine horiz or vert sprite
 			local s = dir < 3 and 117 or 16
@@ -347,13 +354,14 @@ function player:arrow()
 			-- then wait 1s
 			for i=1,30 do yield() end
 		end
-
 		wait_for_anim(firing)
 		arrow_check(self.i, path)
 	end
 end
 
-function get_path()
+dir_to_char = {"⬅️","➡️","⬆️","⬇️"}
+
+function get_path(pathcue)
 	local path = {}
 	for i=1,5 do
 		local b
@@ -364,6 +372,7 @@ function get_path()
 		until b
 		if b <= 3 then
 			add(path, b+1)
+			pathcue[1] = pathcue[1] .. dir_to_char[b+1]
 		else -- nondirectional input, end path
 			break
 		end
@@ -378,7 +387,7 @@ function arrow_check(room_index, path)
 		local i = room.conn[d]
 		if i == wumpus.i then
 			-- todo play sound for hit
-			gameover("You shot the wumpus!")
+			gameover("you shot the wumpus!")
 		elseif i == 0 then
 			-- hit a wall
 			break
@@ -392,7 +401,7 @@ function arrow_check(room_index, path)
 	if wumpus.i == room_index then
 		wait_for_anim(wumpus_animator, room.bounds[index_of(room.conn, prev_wump)])
 		wait_for_anim(wumpus_teeth)
-		gameover("You were eaten by a wumpus.")
+		gameover("you were eaten by a wumpus.")
 	end
 end
 
@@ -500,7 +509,8 @@ end
 
 function gameover(reason)
 	blank = true
-	-- todo set up text overlay
+	add(text_overlay, {reason, nil, nil, 7})
+	for i=1,30 do yield() end
 	extcmd('reset')
 end
 --=============
@@ -643,7 +653,14 @@ local function _draw()
 	end	
 	-- text overlays come after lighting
 	if #text_overlay > 0 then
-		-- todo
+		local next_text = {}
+		for msg in all(text_overlay) do
+			if #msg ~= 0 then
+				print(msg[1], msg[2], msg[3], msg[4])
+				add(next_text, msg)
+			end
+		end
+		text_overlay = next_text
 	end
 end
 __gfx__
