@@ -199,6 +199,7 @@ function player:loop()
 	yield() -- this just gets self assigned
 	local b
 	while true do
+		play_cues()
 		-- input section
 		b = false
 		repeat -- await input
@@ -623,7 +624,9 @@ end
 --=============
 function play_cues()
 	local bat, pit, wump = world[player.i]:status()
-	-- todo actually play audio
+	if bat then sfx(0) end
+	if pit then sfx(2) end
+	if wump then sfx(1) end
 end
 --=============
 -- the game hooks
