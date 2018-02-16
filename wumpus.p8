@@ -282,7 +282,7 @@ function player:enter_room(old_index, new_index)
 		local done
 		if wump or bat then
 			local a
-			if wump then 
+			if wump then
 				a = cocreate(wumpus_animator)
 				coresume(a, vec2(64, 64))
 			else
@@ -663,7 +663,7 @@ local function _draw()
 	extra_draws = next_draws
 	if not blank then
 		-- todo shading/lighting
-	end	
+	end
 	-- text overlays come after lighting
 	if #text_overlay > 0 then
 		local next_text = {}
