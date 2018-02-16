@@ -478,6 +478,7 @@ end
 --=============
 function bat_animator()
 	-- runs when player enters bat room
+	sfx(0)
 	local frame = 0
 	local pos = vec2(64,64)
 	repeat
@@ -505,6 +506,7 @@ end
 
 function pit_animator(vector)
 	yield()
+	sfx(2)
 	-- walk over the edge
 	for i=1,20 do
 		player.pos += vector
