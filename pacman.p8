@@ -594,7 +594,7 @@ function ghost:update()
 	if self.state == 2 then
 		spd = vel * 0.7
 	else
-		spd = vel * 0.98
+		spd = vel * 0.9
 	end
 	if state == 3 or state == 5 then
 		-- can pass through gate on way in and out
