@@ -368,19 +368,6 @@ function mobactor:update()
 	-- the velocity
 	local move = vel:copy()
 
-	-- round to a tile when very
-	-- close to one, so actors
-	-- can fall down gaps easily,
-	-- but only when slowing down
-	if abs(vel.x) < abs(prevx) then
-		local goalx = self.pos.x + move.x
-		local d1 = goalx - flr(goalx + 0.5)
-		-- 1/16 is half a pixel
-		if abs(d1) < 1/16 then
-			move.x -= d1
-		end
-	end
-
 	local coll = self:coll()
 	local delta = vec2(
 		abs(move.x),
@@ -426,7 +413,7 @@ function mobactor:update()
 			return
 		end
 		local otherbox = other:coll()
-		if not coll:overlaps(otherbox) and moverange:overlaps(otherbox) then
+		if coll:overlaps(otherbox) or moverange:overlaps(otherbox) then
 			local dist = coll:dist(otherbox)
 			-- sort in roughly the order we'll encounter actors
 			local order = dist.x * delta.y + dist.y * delta.x
@@ -479,28 +466,14 @@ function mobactor:update()
 		local newdist = coll:dist(blocker.coll)
 		local touchx = newdist.x == 0
 		local touchy = newdist.y == 0
-		if touchx or touchy then
-			if touchx and touchy then
-				-- "corner" case, ho ho!
-				-- allow sliding in the
-				-- direction that we're
-				-- moving fastest in
-				if delta.x > delta.y then
-					touchx = false
-				else
-					touchy = false
-				end
-			end
-
-			local force = move:copy()
-			if not touchx or delta.x == 0 then
-				force.x = 0
-			end
-			if not touchy or delta.y == 0 then
-				force.y = 0
-			end
-			blocker.actor:oncollide(self, force)
+		local force = move:copy()
+		if not touchx or delta.x == 0 then
+			force.x = 0
 		end
+		if not touchy or delta.y == 0 then
+			force.y = 0
+		end
+		blocker.actor:oncollide(self, force)
 	end
 	-- leftover isn't blocked
 	movedby += delta
@@ -667,8 +640,10 @@ function game:initialize()
 		end
 		rel_x = max(rel_x, 1.5)
 
+		bump = sgn(oc.x - sc.x)
+		other.pos.x += bump -- to stop moving paddle from moving through ball
 		-- flip x direction and apply speed
-		h.x = h.x * rel_x * -sgn(force.x)
+		h.x = h.x * rel_x * bump
 		other.vel = h
 	end
 	p0.oncollide = paddlecol
