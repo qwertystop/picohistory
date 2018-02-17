@@ -535,9 +535,8 @@ end
 
 function playeractor:draw()
 	-- is a player, which in this game means 3-high paddle
-	for i=0,2 do
-		spr(self.sprite, self.pos.x+(3 * self.pnum) ,self.pos.y + i*8)
-	end
+	local s = self:coll()
+	rectfill(s.l + 1, s.t, s.r - 1, s.b, 7) -- smaller than collider looks better
 end
 
 -- move all directions. stop when buttons released.
