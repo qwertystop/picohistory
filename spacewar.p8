@@ -324,7 +324,7 @@ bounds = 128
 starcenter = vec2(64,64)
 starsize = 8 -- radius, not dia
 acc = 0.1
-endgame = 60 -- endgame timer
+endgame = 30 -- endgame timer
 
 -- physics functions
 -- accel due to grav, by pos
