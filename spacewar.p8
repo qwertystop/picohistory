@@ -307,9 +307,6 @@ function _update()
 		function(a) return not a.crashed end)
 	splosions = filter(splosions,
 		function(a) return not a.done end)
-	if #shots > 1 then
-		printh(shots[1] == shots[2])
-	end
 end
 
 function _draw()
