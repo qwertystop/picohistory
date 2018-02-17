@@ -176,16 +176,6 @@ function heading(angle)
 	return vec2(cos(angle), sin(angle))
 end
 
--- random point on unit circle
-function randir()
-	local p
-	repeat
-	p = vec2(beta(3,3),
-		beta(3,3)):unit()
-	until(p.x > 0 or p.y > 0)
-	return p
-end
-
 -- rectangles
 box = class()
 
@@ -387,8 +377,7 @@ function ship:init(pnum)
 	self.vel = vec2(0,0)
 	self.hyp = 1
 	self.pnum = pnum
-	self.pos = vec2(rnd(bounds-7),
-		rnd(bounds-7))
+	self.pos = (heading(rnd(1)) * 50) + vec2(60,60)
 	-- heading angle is a number from 1 to 8
 	self.head_angle = flr(rnd(8))+1
 	self.hitbox = vec2(7, 7):at(self.pos)
