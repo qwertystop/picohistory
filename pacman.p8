@@ -557,12 +557,18 @@ function ghost:draw()
 	local st = self.state
 	if st == 2 then
 		sp = 66 -- fright
+		if power < 60 and (power % 8) < 4 then
+			pal(13, 6)
+			pal(6, 13)
+			pal(1, 6)
+		end
 	elseif st == 3 then
 		sp = 42 -- eyes
 	else
 		sp = self.sprs[self.dir]
 	end
 	thing.draw(self, sp, self.dir == 0, false)
+	pal()
 end
 
 function ghost:update()
