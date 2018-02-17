@@ -457,16 +457,11 @@ end
 -- randomize position, but each
 -- use is more likely to land
 -- in the star (centered).
--- also, there's an increasing chance of spontaneous combustion
 function ship:jump()
 	self.pos = vec2(
 		beta(self.hyp, self.hyp, bounds),
 		beta(self.hyp, self.hyp, bounds))
 	self.hyp += 1
-	if rnd(10) < self.hyp then
-		self.crashed = true
-		splode(self.pos)
-	end
 end
 
 shot = class()
