@@ -329,6 +329,7 @@ mobactor = class(actor, {
 	-- physics
 	min_speed = 0.015625,  -- 1/64
 	max_speed = 8,
+	shape = box(1, 1, 5, 5)
 })
 
 function mobactor:init(pos)
@@ -521,7 +522,7 @@ playeractor = class(mobactor, {
 	__name = "playeractor",
 	is_player = true,
 	collide_check = false,
-	shape = box(0, 0, 1, 24),
+	shape = box(0, 0, 4, 24),
 	max_speed = 2,
 	-- controls
 	accel = 0.75,
@@ -535,7 +536,7 @@ end
 function playeractor:draw()
 	-- is a player, which in this game means 3-high paddle
 	for i=0,2 do
-		spr(self.sprite, self.pos.x, self.pos.y + i*8)
+		spr(self.sprite, self.pos.x+(3 * self.pnum) ,self.pos.y + i*8)
 	end
 end
 
