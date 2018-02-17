@@ -658,13 +658,14 @@ function game:initialize()
 		end
 		local h = heading(a)
 		-- speed is based on how far forward paddle is
-		-- should be 1 at default position
+		-- minimum 1.5
 		local rel_x
 		if paddle.pnum == 1 then
 			rel_x = sc.x / 14
 		else
 			rel_x = (128 - sc.x) / 14
 		end
+		rel_x = max(rel_x, 1.5)
 
 		-- flip x direction and apply speed
 		h.x = h.x * rel_x * -sgn(force.x)
