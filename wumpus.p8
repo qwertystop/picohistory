@@ -275,7 +275,7 @@ function player:enter_room(old_index, new_index)
 	local wump = wumpus.i == new_index
 	if pit then
 		wait_for_anim(pit_animator, vector)
-		gameover("you fell into a pit.")
+		gameover("you fell into a pit.\ngame over.")
 	else
 		-- if wump or bat, walk until they run into you
 		-- otherwise, walk to center
@@ -301,7 +301,7 @@ function player:enter_room(old_index, new_index)
 		if wump then
 			-- play teeth, then reset
 			wait_for_anim(wumpus_teeth)
-			gameover("you were eaten by a wumpus.")
+			gameover("you were eaten by a wumpus.\ngame over.")
 		elseif bat then
 			-- find a new room
 			local where
@@ -496,7 +496,7 @@ function bat_pause()
 	blank = true
 	local note = {"a bat carries you\nto another room!", 0, 0, 7}
 	add(text_overlay, note)
-	for i=1,15 do
+	for i=1,45 do
 		yield()
 	end
 	for i=1,4 do note[i]=nil end
@@ -523,7 +523,7 @@ end
 function gameover(reason)
 	blank = true
 	add(text_overlay, {reason, nil, nil, 7})
-	for i=1,30 do yield() end
+	for i=1,45 do yield() end
 	extcmd('reset')
 end
 --=============
