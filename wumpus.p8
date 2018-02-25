@@ -536,7 +536,7 @@ room = class{
 function room:init(i,n,e,s,w)
 	self.i = i
 	self.conn = {w,e,n,s} -- in button order
-	self.moss = pick(room.palette)
+	self.moss = room.palette[i%(#room.palette) + 1]
 	self.pit = false
 	self.bat = false
 end
