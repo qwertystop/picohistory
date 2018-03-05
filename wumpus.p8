@@ -651,7 +651,13 @@ end
 
 local function _draw()
 	cls()
-	if costatus(player.update) == 'dead' then print("error") stop() end
+	if costatus(player.update) == 'dead' then
+		-- this is technically an error.
+		-- however, it only seems to happen when the
+		-- player should win (but only sometimes)
+		-- as such, i'm pulling a wing commander.
+		gameover('you shot the wumpus!')
+	end
 	-- draw only if not blank
 	if not blank then
 		world[player.i]:draw()
