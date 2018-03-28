@@ -499,8 +499,15 @@ function pacman:update()
 	-- direction persists between frames
 	for i=0,4 do
 		if btn(i) then
-			self.dir = i
-			break
+			-- make sure it's a valid move
+			-- i know this is redundant but this game isn't
+			-- enough to make the p8 chug anyway
+			local target = (self.pos + (directions[i] * 0.7)):round()
+			-- check if we're within half a cell of hitting the wall
+			if not fget(mget(target.x, target.y), 0) then
+				self.dir = i
+				break
+			end
 		end
 	end
 	local cell = self.pos:round()
